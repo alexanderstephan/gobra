@@ -13,6 +13,7 @@ func main() {
     log.Fatal(err)
   }
   defer gc.End()
+
   // Turn off character echo, hide the cursor and disable input buffering
   gc.Echo(false)
   gc.CBreak(true)
@@ -21,7 +22,10 @@ func main() {
   stdscr.Print("Use vim bindings to move the snake. Press 'q' to exit")
   stdscr.NoutRefresh()
 
+  // Use maximum screen width
   rows, cols  :=  stdscr.MaxYX()
+
+  // Define object dimensions
   height, width := 2, 8
   y, x := (rows-height)/2, (cols-width)/2
   // Create a rectangle window that is a placeholder for the snake
@@ -39,13 +43,16 @@ main:
     // Prevent output to terminal
     win.Erase()
     win.NoutRefresh()
+
     // Move the window and redraw it
     win.MoveWindow(y, x)
     win.Box(gc.ACS_VLINE, gc.ACS_HLINE)
     win.NoutRefresh()
+
     // Flush characters that have changed
     gc.Update()
 
+    // Get input and manipulate object position
     switch win.GetChar() {
     case 'q':
       break main
