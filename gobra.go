@@ -7,42 +7,85 @@ import (
 	"time"
 )
 
-var snake_ascii = []string{
-	`====@`,
-}
+const food_char = 'X'
 
-var food_ascii = []string{
-	`X`,
-}
+const snake_ascii = "####"
 
-type Object interface {
-	Cleanup()
-	Collide(int)
-	Draw(*gc.Window)
-	Expired(int, int) bool
-	Update()
-}
+type Direction int
 
 type Food struct {
 	*gc.Window
 	eaten bool
+	y, x  int
 }
 
 type Snake struct {
-	//*gc.Window
+	*gc.Window
 	alive     bool
 	y, x      int
 	segements int
 }
 
-var objects = make([]Object, 0, 16)
+type Board struct {
+	Snake
+	Food
+	max_y, max_x int
+}
+
+const (
+	North Direction = iota
+	East
+	South
+	West
+)
+
+var d Direction = North
+
+func (d Direction) String() string {
+	return [...]string{"North", "East", "South", "West"}[d]
+}
 
 func spawnFood(stdscr *gc.Window) *Food {
 	val1, val2 := stdscr.MaxYX()
 	y := rand.Intn(val1)
 	x := rand.Intn(val2)
-	stdscr.MovePrint(x, y, food_ascii)
-	return &Food{eaten: false}
+	stdscr.MoveAddChar(y, x, food_char)
+	return &Food{eaten: false, y: y, x: x}
+}
+
+func handleInput(stdscr *gc.Window, snake *gc.Window) bool {
+	rows, cols := stdscr.MaxYX()
+	y, x := snake.YX()
+	k := snake.GetChar()
+
+	switch byte(k) {
+	case 'q':
+		return false
+	case 'h':
+		if x > 0 {
+			x--
+		}
+	case 'l':
+		if x < cols {
+			x++
+		}
+	case 'k':
+		if y > 1 {
+			y--
+		}
+	case 'j':
+		if y < rows {
+			y++
+		}
+	default:
+		return false
+	}
+	snake.Erase()
+	snake.Refresh()
+	snake.MoveWindow(y, x)
+	snake.Print(snake_ascii)
+	snake.Refresh()
+	return true
 }
 
 func main() {
@@ -84,7 +127,7 @@ func main() {
 	stdscr.ColorOn(1)
 	stdscr.Print("Use vim bindings to move the snake. Press 'q' to exit")
 	stdscr.ColorOff(1)
-	spawnFood(stdscr)
+
 	stdscr.Refresh()
 
 	// Use maximum screen width
@@ -92,62 +135,51 @@ func main() {
 
 	// Define object dimensions
 	height, width := 2, 8
-	y, x := (rows-height)/2, (cols-width)/2
+	y, x := rows/2, cols/2
 
 	// Create a rectangle window that is a placeholder for the snake
-	var win *gc.Window
-	win, err = gc.NewWindow(height, width, y, x)
+	var snake *gc.Window
+	snake, err = gc.NewWindow(height, width, y, x)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Init snake
+	snake.MoveWindow(y, x)
+	snake.Print(snake_ascii)
+	snake.Refresh()
+
+	// Init food
+	spawnFood(stdscr)
+	stdscr.Refresh()
+
+	snake.Timeout(100)
+
 	// Wait for keyboard input
-	win.Keypad(true)
+	snake.Keypad(true)
 
-main:
+	// Define timings
+	c := time.NewTicker(time.Second / 2)
+	c2 := time.NewTicker(time.Second / 4)
+
+loop:
 	for {
-		// Prevent output to terminal
-		win.Erase()
-		//stdscr.Refresh()
-		win.Refresh()
+		stdscr.Refresh()
 
-		// stdscr.GetChar()
-		//stdscr.SetBackground(gc.Char('x')) //| gc.ColorPair(1))
-		// stdscr.ColorOn(1)
-
-		// Move the window and redraw it
-		win.MoveWindow(y, x)
-		win.ColorOn(1)
-		win.Print(snake_ascii)
-		win.ColorOff(1)
-		//win.Box(gc.ACS_VLINE, gc.ACS_HLINE)
-
-		win.Refresh()
+		select {
+		case <-c.C:
+			spawnFood(stdscr)
+		case <-c2.C:
+			spawnFood(stdscr)
+		default:
+			if !handleInput(stdscr, snake) {
+				break loop
+			}
+		}
 
 		// Flush characters that have changed
 		gc.Update()
 
-		// Get input and manipulate object position
-		switch win.GetChar() {
-		case 'q':
-			break main
-		case 'h':
-			if x > 0 {
-				x--
-			}
-		case 'l':
-			if x < cols-width {
-				x++
-			}
-		case 'k':
-			if y > 1 {
-				y--
-			}
-		case 'j':
-			if y < rows-height {
-				y++
-			}
-		}
 	}
-	win.Delete()
+	snake.Delete()
 }
