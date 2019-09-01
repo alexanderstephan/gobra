@@ -53,7 +53,7 @@ func spawnFood(stdscr *gc.Window) *Food {
 	return &Food{eaten: false, y: y, x: x}
 }
 
-func handleInput(stdscr *gc.Window, snake *gc.Window) bool {
+func moveSnake(stdscr *gc.Window, snake *gc.Window) bool {
 	rows, cols := stdscr.MaxYX()
 	y, x := snake.YX()
 	k := snake.GetChar()
@@ -63,28 +63,22 @@ func handleInput(stdscr *gc.Window, snake *gc.Window) bool {
 		return false
 	case 'h':
 		if x > 0 {
-			x--
+			d = West
 		}
 	case 'l':
 		if x < cols {
-			x++
+			d = East
 		}
+
 	case 'k':
 		if y > 1 {
-			y--
+			d = North
 		}
 	case 'j':
 		if y < rows {
-			y++
+			d = South
 		}
-	default:
-		return false
 	}
-	snake.Erase()
-	snake.Refresh()
-	snake.MoveWindow(y, x)
-	snake.Print(snake_ascii)
-	snake.Refresh()
 	return true
 }
 
@@ -153,26 +147,42 @@ func main() {
 	spawnFood(stdscr)
 	stdscr.Refresh()
 
+	// Threshold for timeout
 	snake.Timeout(100)
 
 	// Wait for keyboard input
 	snake.Keypad(true)
 
 	// Define timings
-	c := time.NewTicker(time.Second / 2)
-	c2 := time.NewTicker(time.Second / 4)
+	c := time.NewTicker(time.Second * 5)
+	c2 := time.NewTicker(time.Second / 16)
 
 loop:
 	for {
 		stdscr.Refresh()
 
+		// Time events
 		select {
 		case <-c.C:
 			spawnFood(stdscr)
 		case <-c2.C:
-			spawnFood(stdscr)
+			switch d {
+			case North:
+				y--
+			case South:
+				y++
+			case West:
+				x--
+			case East:
+				x++
+			}
+			snake.Erase()
+			snake.Refresh()
+			snake.MoveWindow(y, x)
+			snake.Print(snake_ascii)
+			snake.Refresh()
 		default:
-			if !handleInput(stdscr, snake) {
+			if !moveSnake(stdscr, snake) {
 				break loop
 			}
 		}
