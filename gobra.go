@@ -99,10 +99,11 @@ func spawnFood(stdscr *gc.Window) *Food {
 	return &Food{eaten: false, y: y, x: x}
 }
 
-func setSnakeDir(stdscr *gc.Window, snake *gc.Window) bool {
+func (s *Snake) setSnakeDir(stdscr *gc.Window) bool {
 	rows, cols := stdscr.MaxYX()
-	y, x := snake.YX()
-	k := snake.GetChar()
+	snake_pos := s.start
+	y, x := snake_pos.y, snake_pos.x
+	k := stdscr.GetChar()
 
 	switch byte(k) {
 	case 'q':
@@ -235,7 +236,7 @@ loop:
 				x++
 			}
 		default:
-			if !setSnakeDir(stdscr, snake) {
+			if !newSnake.setSnakeDir(stdscr) {
 				break loop
 			}
 		}
