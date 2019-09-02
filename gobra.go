@@ -21,7 +21,7 @@ type Food struct {
 
 type SnakeSegment struct {
 	y, x    int
-	segment string
+	segment rune
 	next    *SnakeSegment
 }
 
@@ -68,27 +68,24 @@ func (s *Snake) insertSegments(newSegment *SnakeSegment) {
 }
 
 func (s *Snake) createSnake() {
-	//mySnake := &Snake{}
 	size := 7
 	for i := 0; i < size; i++ {
 		node := SnakeSegment{}
 		if s.length == 0 {
-			node = SnakeSegment{segment: "@", y: 100, x: 100}
+			node = SnakeSegment{segment: '@', y: 20, x: 20}
 		} else {
-			node = SnakeSegment{segment: "=", y: 100, x: 100 + i}
+			node = SnakeSegment{segment: '=', y: 20, x: 20 + i}
 		}
 		s.insertSegments(&node)
 	}
 }
 
-func (s *Snake) renderSnake(snake *gc.Window) {
+func (s *Snake) renderSnake(stdscr *gc.Window) {
 	list := s.start
-	snake_string := ""
 	for list != nil {
-		snake_string += list.segment
+		stdscr.MoveAddChar(list.y, list.x, gc.Char(list.segment))
 		list = list.next
 	}
-	snake.Print(snake_string)
 }
 
 func spawnFood(stdscr *gc.Window) *Food {
@@ -172,41 +169,31 @@ func main() {
 		log.Fatal("InitPair failed: ", err)
 	}
 
-	stdscr.ColorOn(1)
-	stdscr.Print("Use vim bindings to move the snake. Press 'q' to exit")
-	stdscr.ColorOff(1)
-
-	stdscr.Refresh()
-
 	// Use maximum screen width
 	rows, cols := stdscr.MaxYX()
 
 	// Define object dimensions
-	height, width := 1, 8
+	// height, width := 1, 8
 	y, x := rows/2, cols/2
 
 	// Create a rectangle window that is a placeholder for the snake
-	var snake *gc.Window
+	/*var snake *gc.Window
 	snake, err = gc.NewWindow(height, width, y, x)
 	if err != nil {
 		log.Fatal(err)
 	}
+	*/
+	stdscr.MovePrint(y, x-10, "Press any key to start")
 
 	// Init snake
 	newSnake := &Snake{}
 	newSnake.createSnake()
-	snake.MoveWindow(y, x)
-	newSnake.renderSnake(snake)
-	snake.Refresh()
-
-	// Init food
-	spawnFood(stdscr)
 
 	// Threshold for timeout
-	snake.Timeout(100)
+	// snake.Timeout(100)
 
 	// Wait for keyboard input
-	snake.Keypad(true)
+	stdscr.Keypad(true)
 
 	// Define timings
 	c := time.NewTicker(time.Second * 5)
@@ -219,21 +206,37 @@ loop:
 		case <-c.C:
 			spawnFood(stdscr)
 		case <-c2.C:
-			snake.Erase()
-			snake.Refresh()
-			newSnake.renderSnake(snake)
-			snake.MoveWindow(y, x)
-			snake.Refresh()
+			stdscr.Erase()
+			stdscr.Refresh()
+			stdscr.ColorOn(1)
+			stdscr.MovePrint(0, 0, "Use vim bindings to move the snake. Press 'q' to exit")
+			newSnake.renderSnake(stdscr)
+			stdscr.ColorOff(1)
+			stdscr.Refresh()
 
 			switch d {
 			case North:
-				y--
+				mySegment := newSnake.start
+				for mySegment != nil {
+					mySegment.y--
+					mySegment = mySegment.next
+				}
 			case South:
-				y++
+				mySegment := newSnake.start
+				for mySegment != nil {
+					mySegment.y++
+					mySegment = mySegment.next
+				}
 			case West:
-				x--
+				mySegment := newSnake.start
+				for mySegment != nil {
+					mySegment.x--
+				}
 			case East:
-				x++
+				mySegment := newSnake.start
+				for mySegment != nil {
+					mySegment.x++
+				}
 			}
 		default:
 			if !newSnake.setSnakeDir(stdscr) {
@@ -245,5 +248,5 @@ loop:
 		gc.Update()
 
 	}
-	snake.Delete()
+	stdscr.Delete()
 }
