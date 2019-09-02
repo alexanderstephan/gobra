@@ -200,7 +200,6 @@ func main() {
 
 	// Init food
 	spawnFood(stdscr)
-	stdscr.Refresh()
 
 	// Threshold for timeout
 	snake.Timeout(100)
@@ -214,13 +213,17 @@ func main() {
 
 loop:
 	for {
-		stdscr.Refresh()
-
 		// Time events
 		select {
 		case <-c.C:
 			spawnFood(stdscr)
 		case <-c2.C:
+			snake.Erase()
+			snake.Refresh()
+			newSnake.renderSnake(snake)
+			snake.MoveWindow(y, x)
+			snake.Refresh()
+
 			switch d {
 			case North:
 				y--
@@ -231,12 +234,6 @@ loop:
 			case East:
 				x++
 			}
-			snake.Erase()
-			snake.Refresh()
-			newSnake.renderSnake(snake)
-			snake.MoveWindow(y, x)
-			snake.MoveAddChar(y, x, 'L')
-			snake.Refresh()
 		default:
 			if !setSnakeDir(stdscr, snake) {
 				break loop
