@@ -9,7 +9,7 @@ import (
 
 const food_char = 'X'
 
-const snake_ascii = "####"
+const snake_ascii = "#"
 
 type Direction int
 
@@ -19,11 +19,16 @@ type Food struct {
 	y, x  int
 }
 
+type SnakeSegment struct {
+	y, x    int
+	segment string
+	next    *SnakeSegment
+}
+
 type Snake struct {
 	*gc.Window
-	alive     bool
-	y, x      int
-	segements int
+	length int
+	start  *SnakeSegment
 }
 
 type Board struct {
@@ -45,6 +50,47 @@ func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
 }
 
+func (s *Snake) insertSegments(newSegment *SnakeSegment) {
+	if s.length == 0 {
+		s.start = newSegment
+	} else {
+		currentSegment := s.start
+
+		// Traverse the list until the next node is empty
+		for currentSegment.next != nil {
+			currentSegment = currentSegment.next
+		}
+		// Append new segment
+		currentSegment.next = newSegment
+	}
+	// In both cases increment by one
+	s.length++
+}
+
+func (s *Snake) createSnake() {
+	//mySnake := &Snake{}
+	size := 7
+	for i := 0; i < size; i++ {
+		node := SnakeSegment{}
+		if s.length == 0 {
+			node = SnakeSegment{segment: "@", y: 100, x: 100}
+		} else {
+			node = SnakeSegment{segment: "=", y: 100, x: 100 + i}
+		}
+		s.insertSegments(&node)
+	}
+}
+
+func (s *Snake) renderSnake(snake *gc.Window) {
+	list := s.start
+	snake_string := ""
+	for list != nil {
+		snake_string += list.segment
+		list = list.next
+	}
+	snake.Print(snake_string)
+}
+
 func spawnFood(stdscr *gc.Window) *Food {
 	val1, val2 := stdscr.MaxYX()
 	y := rand.Intn(val1)
@@ -53,7 +99,7 @@ func spawnFood(stdscr *gc.Window) *Food {
 	return &Food{eaten: false, y: y, x: x}
 }
 
-func moveSnake(stdscr *gc.Window, snake *gc.Window) bool {
+func setSnakeDir(stdscr *gc.Window, snake *gc.Window) bool {
 	rows, cols := stdscr.MaxYX()
 	y, x := snake.YX()
 	k := snake.GetChar()
@@ -69,7 +115,6 @@ func moveSnake(stdscr *gc.Window, snake *gc.Window) bool {
 		if x < cols {
 			d = East
 		}
-
 	case 'k':
 		if y > 1 {
 			d = North
@@ -128,7 +173,7 @@ func main() {
 	rows, cols := stdscr.MaxYX()
 
 	// Define object dimensions
-	height, width := 2, 8
+	height, width := 1, 8
 	y, x := rows/2, cols/2
 
 	// Create a rectangle window that is a placeholder for the snake
@@ -139,8 +184,10 @@ func main() {
 	}
 
 	// Init snake
+	newSnake := &Snake{}
+	newSnake.createSnake()
 	snake.MoveWindow(y, x)
-	snake.Print(snake_ascii)
+	newSnake.renderSnake(snake)
 	snake.Refresh()
 
 	// Init food
@@ -175,14 +222,15 @@ loop:
 				x--
 			case East:
 				x++
-			}
-			snake.Erase()
-			snake.Refresh()
-			snake.MoveWindow(y, x)
-			snake.Print(snake_ascii)
-			snake.Refresh()
+			} /*
+				snake.Erase()
+				snake.Refresh()
+				snake.MoveWindow(y, x)
+				snake.Print(newSnake.renderSnake())
+				snake.Refresh()
+			*/
 		default:
-			if !moveSnake(stdscr, snake) {
+			if !setSnakeDir(stdscr, snake) {
 				break loop
 			}
 		}
