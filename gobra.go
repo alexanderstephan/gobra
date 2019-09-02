@@ -109,19 +109,27 @@ func setSnakeDir(stdscr *gc.Window, snake *gc.Window) bool {
 		return false
 	case 'h':
 		if x > 0 {
-			d = West
+			if d != East {
+				d = West
+			}
 		}
 	case 'l':
 		if x < cols {
-			d = East
+			if d != West {
+				d = East
+			}
 		}
 	case 'k':
 		if y > 1 {
-			d = North
+			if d != South {
+				d = North
+			}
 		}
 	case 'j':
 		if y < rows {
-			d = South
+			if d != North {
+				d = South
+			}
 		}
 	}
 	return true
@@ -222,13 +230,13 @@ loop:
 				x--
 			case East:
 				x++
-			} /*
-				snake.Erase()
-				snake.Refresh()
-				snake.MoveWindow(y, x)
-				snake.Print(newSnake.renderSnake())
-				snake.Refresh()
-			*/
+			}
+			snake.Erase()
+			snake.Refresh()
+			newSnake.renderSnake(snake)
+			snake.MoveWindow(y, x)
+			snake.MoveAddChar(y, x, 'L')
+			snake.Refresh()
 		default:
 			if !setSnakeDir(stdscr, snake) {
 				break loop
