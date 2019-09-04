@@ -8,34 +8,25 @@ import (
 )
 
 const food_char = 'X'
+const snake_body = '#'
+const start_size = 20
 
-const snake_ascii = "#"
-
-type Direction int
-
-type Food struct {
-	*gc.Window
-	eaten bool
-	y, x  int
-}
-
-type SnakeSegment struct {
-	y, x    int
-	segment rune
-	next    *SnakeSegment
+type Segment struct {
+	y, x int
+	next *Segment
 }
 
 type Snake struct {
-	*gc.Window
 	length int
-	start  *SnakeSegment
+	start  *Segment
+	end    *Segment
 }
 
-type Board struct {
-	Snake
-	Food
-	max_y, max_x int
+type Food struct {
+	y, x int
 }
+
+type Direction int
 
 const (
 	North Direction = iota
@@ -49,8 +40,7 @@ var d Direction = North
 func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
 }
-
-func (s *Snake) insertSegments(newSegment *SnakeSegment) {
+func (s *Snake) InsertSegments(newSegment *Segment) {
 	if s.length == 0 {
 		s.start = newSegment
 	} else {
@@ -67,67 +57,92 @@ func (s *Snake) insertSegments(newSegment *SnakeSegment) {
 	s.length++
 }
 
-func (s *Snake) createSnake() {
-	size := 7
-	for i := 0; i < size; i++ {
-		node := SnakeSegment{}
-		if s.length == 0 {
-			node = SnakeSegment{segment: '@', y: 20, x: 20}
-		} else {
-			node = SnakeSegment{segment: '=', y: 20, x: 20 + i}
-		}
-		s.insertSegments(&node)
+func (s *Snake) CutTail() {
+	if s.length == 0 {
+		return
+	}
+	var previousSegment *Segment
+	currentSegment := s.start
+
+	for currentSegment.next != nil {
+		previousSegment = currentSegment
+		currentSegment = currentSegment.next
+	}
+
+	// currentSegment = currentSegment.next not possible since previousSegment wouldn't be unused
+	previousSegment.next = currentSegment.next
+
+	s.length--
+}
+
+func (s *Snake) InitSnake(stdscr *gc.Window) {
+	snake_pos_y, snake_pos_x := stdscr.MaxYX()
+
+	for i := 0; i < start_size; i++ {
+		node := Segment{y: snake_pos_y / 2, x: snake_pos_x/2 - i}
+		s.InsertSegments(&node)
 	}
 }
 
-func (s *Snake) renderSnake(stdscr *gc.Window) {
-	list := s.start
-	for list != nil {
-		stdscr.MoveAddChar(list.y, list.x, gc.Char(list.segment))
-		list = list.next
+func (s *Snake) PushFront(newDir Direction) {
+	newSegment := s.start
+	nextSegment := s.start.next
+
+	switch newDir {
+	case North:
+		newSegment = &Segment{y: (nextSegment.y - 1), x: nextSegment.x}
+	case South:
+		newSegment = &Segment{y: (nextSegment.y + 1), x: nextSegment.x}
+	case West:
+		newSegment = &Segment{y: nextSegment.y, x: (nextSegment.x - 1)}
+	case East:
+		newSegment = &Segment{y: nextSegment.y, x: (nextSegment.x + 1)}
+	}
+
+	s.start = newSegment
+
+	s.length++
+}
+
+func (s *Snake) RenderSnake(stdscr *gc.Window) {
+	snake_segment := s.start
+	for snake_segment != nil {
+		stdscr.MoveAddChar(snake_segment.y, snake_segment.x, gc.Char(snake_body))
+		snake_segment = snake_segment.next
 	}
 }
 
-func spawnFood(stdscr *gc.Window) *Food {
+func (f *Food) spawnFood(stdscr *gc.Window) Food {
 	val1, val2 := stdscr.MaxYX()
-	y := rand.Intn(val1)
-	x := rand.Intn(val2)
-	stdscr.MoveAddChar(y, x, food_char)
-	return &Food{eaten: false, y: y, x: x}
+	food_y := rand.Intn(val1)
+	food_x := rand.Intn(val2)
+	stdscr.MoveAddChar(food_y, food_x, food_char)
+	random_food := Food{y: food_y, x: food_x}
+	return random_food
 }
 
-func (s *Snake) setSnakeDir(stdscr *gc.Window) bool {
+func setSnakeDir(stdscr *gc.Window, snake *gc.Window, y, x int) bool {
 	rows, cols := stdscr.MaxYX()
-	snake_pos := s.start
-	y, x := snake_pos.y, snake_pos.x
-	k := stdscr.GetChar()
+	k := snake.GetChar()
 
 	switch byte(k) {
 	case 'q':
 		return false
 	case 'h':
-		if x > 0 {
-			if d != East {
-				d = West
-			}
+		if x > 0 && d != East {
+			d = West
 		}
 	case 'l':
-		if x < cols {
-			if d != West {
-				d = East
-			}
+		if x < cols && d != West {
+			d = East
 		}
 	case 'k':
-		if y > 1 {
-			if d != South {
-				d = North
-			}
+		if y > 1 && d != South {
+			d = North
 		}
 	case 'j':
-		if y < rows {
-			if d != North {
-				d = South
-			}
+		if y < rows && d != North {
+			d = South
 		}
 	}
 	return true
@@ -140,6 +155,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer gc.End()
 
 	// Randomize pseudo random fucntions
@@ -173,80 +189,88 @@ func main() {
 	rows, cols := stdscr.MaxYX()
 
 	// Define object dimensions
-	// height, width := 1, 8
 	y, x := rows/2, cols/2
 
 	// Create a rectangle window that is a placeholder for the snake
-	/*var snake *gc.Window
-	snake, err = gc.NewWindow(height, width, y, x)
+	var snake *gc.Window
+	snake, err = gc.NewWindow(0, 0, y, x)
 	if err != nil {
 		log.Fatal(err)
 	}
-	*/
-	stdscr.MovePrint(y, x-10, "Press any key to start")
+
+	snake.Refresh()
 
 	// Init snake
 	newSnake := &Snake{}
-	newSnake.createSnake()
+	newSnake.InitSnake(stdscr)
+	//node := Segment{symbol: snake_body, y: 40, x: 40}
+	//newSnake.pushFront(&node)
+
+	// Init food
+	var food_y, food_x int
+	stdscr.Refresh()
 
 	// Threshold for timeout
-	// snake.Timeout(100)
+	snake.Timeout(100)
 
 	// Wait for keyboard input
-	stdscr.Keypad(true)
-
-	// Define timings
-	c := time.NewTicker(time.Second * 5)
-	c2 := time.NewTicker(time.Second / 16)
+	snake.Keypad(true)
 
 loop:
 	for {
-		// Time events
-		select {
-		case <-c.C:
-			spawnFood(stdscr)
-		case <-c2.C:
-			stdscr.Erase()
-			stdscr.Refresh()
-			stdscr.ColorOn(1)
-			stdscr.MovePrint(0, 0, "Use vim bindings to move the snake. Press 'q' to exit")
-			newSnake.renderSnake(stdscr)
-			stdscr.ColorOff(1)
-			stdscr.Refresh()
+		// Clear screen
+		stdscr.Refresh()
+		stdscr.Erase()
 
-			switch d {
-			case North:
-				mySegment := newSnake.start
-				for mySegment != nil {
-					mySegment.y--
-					mySegment = mySegment.next
-				}
-			case South:
-				mySegment := newSnake.start
-				for mySegment != nil {
-					mySegment.y++
-					mySegment = mySegment.next
-				}
-			case West:
-				mySegment := newSnake.start
-				for mySegment != nil {
-					mySegment.x--
-				}
-			case East:
-				mySegment := newSnake.start
-				for mySegment != nil {
-					mySegment.x++
-				}
-			}
-		default:
-			if !newSnake.setSnakeDir(stdscr) {
-				break loop
-			}
+		// Show controls
+		stdscr.ColorOn(1)
+		stdscr.MovePrint(0, 0, "Use vim bindings to move the snake. Press 'q' to exit")
+		stdscr.MovePrint(1, 0, newSnake.length)
+		snake_head := newSnake.start
+
+		if food_y == 0 && food_x == 0 {
+			food_y = rand.Intn(rows)
+			food_x = rand.Intn(cols)
 		}
+		stdscr.MoveAddChar(food_y, food_x, food_char)
+
+		if snake_head.y == food_y && snake_head.x == food_x {
+			food_y = rand.Intn(rows)
+			food_x = rand.Intn(cols)
+			stdscr.MoveAddChar(food_y, food_x, food_char)
+		}
+
+		stdscr.MovePrint(2, 0, food_y, food_x)
+		stdscr.ColorOff(1)
+
+		newSnake.CutTail()
+
+		// Update snake position
+		/*switch d {
+		case North:
+			newSnake.PushFront(North)
+		case South:
+			newSnake.PushFront(South)
+		case West:
+			newSnake.PushFront(West)
+		case East:
+			newSnake.PushFront(East)
+		}
+		*/
+		// Render snake with altered position
+		newSnake.RenderSnake(stdscr)
+
+		// setSnakeDir returns false on exit -> interrupt loop
+		if !setSnakeDir(stdscr, snake, y, x) {
+			break loop
+		}
+
+		// Refresh changes in screen buffer
+		stdscr.Refresh()
 
 		// Flush characters that have changed
 		gc.Update()
 
 	}
-	stdscr.Delete()
+	snake.Delete()
 }
