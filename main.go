@@ -41,14 +41,15 @@ func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
 }
 
-
 func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
+	// Get screen dimensions
 	rows, cols := stdscr.MaxYX()
+
+	// Get input from a dedicated window, otherwise stdscr would be blocked
 	k := input.GetChar()
 
+	// Define input handlers with interrupt condition
 	switch byte(k) {
-	case 'q':
-		return false
 	case 'h':
 		if x > 0 && d != East {
 			d = West
@@ -65,6 +66,8 @@ func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
 		if y < rows && d != North {
 			d = South
 		}
+	case 'q':
+		return false
 	}
 	return true
 }
@@ -76,7 +79,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	// End is required to preserve terminal after execution
 	defer gc.End()
 
@@ -148,18 +151,23 @@ loop:
 		stdscr.MovePrint(1, 0, newSnake.length)
 		stdscr.MovePrint(3, 0, frame_counter)
 
+		// Init food position
 		if food_y == 0 && food_x == 0 {
 			food_y = rand.Intn(rows)
 			food_x = rand.Intn(cols)
 		}
-		stdscr.MoveAddChar(food_y, food_x, food_char)
-		snake_tail := newSnake.start
 
-		for snake_tail.next != nil {
-			snake_tail = snake_tail.next
+		// Draw food
+		stdscr.MoveAddChar(food_y, food_x, food_char)
+
+		// Look for
+		snake_head := newSnake.start
+
+		for snake_head.next != nil {
+			snake_head = snake_head.next
 		}
 
-		if snake_tail.y == food_y && snake_tail.x == food_x {
+		if snake_head.y == food_y && snake_head.x == food_x {
 			food_y = rand.Intn(rows)
 			food_x = rand.Intn(cols)
 			stdscr.MoveAddChar(food_y, food_x, food_char)
@@ -167,12 +175,13 @@ loop:
 
 		stdscr.MovePrint(2, 0, food_y, food_x)
 
-		if snake_tail.y > rows || snake_tail.y < 0 || snake_tail.x > cols || snake_tail.x < 0 {
+		if snake_head.y > rows || snake_head.y < 0 || snake_head.x > cols || snake_head.x < 0 {
 			stdscr.MovePrint((rows / 2), cols/2, "GAME OVER")
 		}
 
 		stdscr.ColorOff(1)
 
+		// Move snake by one cell in the new direction
 		switch d {
 		case North:
 			newSnake.MoveSnake(North)
@@ -183,8 +192,11 @@ loop:
 		case East:
 			newSnake.MoveSnake(East)
 		}
+
+		// Cut off unneeded space
 		newSnake.CutFront()
 
+		// Count frames for debug purposes
 		frame_counter++
 
 		// Render snake with altered position
