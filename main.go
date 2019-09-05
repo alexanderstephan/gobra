@@ -8,7 +8,7 @@ import (
 )
 
 const food_char = 'X'
-const snake_body = '#'
+const snake_body = 'O'
 const start_size = 20
 
 type Segment struct {
@@ -156,26 +156,27 @@ loop:
 		// Draw food
 		stdscr.MoveAddChar(food_y, food_x, food_char)
 
-		// Look for
+		// Iterate over list until we get the snakes head
 		snake_head := newSnake.start
 
 		for snake_head.next != nil {
 			snake_head = snake_head.next
 		}
 
+		// Detect food collision
 		if snake_head.y == food_y && snake_head.x == food_x {
 			food_y = rand.Intn(rows)
 			food_x = rand.Intn(cols)
 			stdscr.MoveAddChar(food_y, food_x, food_char)
 		}
 
+		// Draw new food
 		stdscr.MovePrint(2, 0, food_y, food_x)
 
+		// Detect boundaries
 		if snake_head.y > rows || snake_head.y < 0 || snake_head.x > cols || snake_head.x < 0 {
 			stdscr.MovePrint((rows / 2), cols/2, "GAME OVER")
 		}
-
-		stdscr.ColorOff(1)
 
 		// Move snake by one cell in the new direction
 		switch d {
@@ -198,6 +199,7 @@ loop:
 		// Render snake with altered position
 		newSnake.RenderSnake(stdscr)
 
+		stdscr.ColorOff(1)
 		// setSnakeDir returns false on exit -> interrupt loop
 		if !setSnakeDir(stdscr, input, y, x) {
 			break loop
