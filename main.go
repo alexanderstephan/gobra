@@ -22,10 +22,6 @@ type Snake struct {
 	end    *Segment
 }
 
-type Food struct {
-	y, x int
-}
-
 type Direction int
 
 const (
