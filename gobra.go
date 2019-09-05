@@ -9,7 +9,7 @@ import (
 
 const food_char = 'X'
 const snake_body = '#'
-const start_size = 6
+const start_size = 2
 
 type Segment struct {
 	y, x int
@@ -58,10 +58,15 @@ func (s *Snake) InsertSegments(newSegment *Segment) {
 }
 
 func (s *Snake) AppendTail(newDir Direction) {
+	// Init starting position
 	currentSegment := s.start
+
+	// Move currentSegment to the last element in the list
 	for currentSegment.next != nil {
 		currentSegment = currentSegment.next
 	}
+
+	// Increment or decremt last position
 	switch newDir {
 	case North:
 		currentSegment.y--
@@ -72,10 +77,11 @@ func (s *Snake) AppendTail(newDir Direction) {
 	case East:
 		currentSegment.x++
 	}
-
+	// Append node with new position
 	newNode := &Segment{y: currentSegment.y, x: currentSegment.x}
-	s.InsertSegments(newNode)
+	currentSegment.next = newNode
 
+	s.length++
 }
 
 func (s *Snake) CutTail() {
@@ -105,7 +111,7 @@ func (s *Snake) InitSnake(stdscr *gc.Window) {
 	}
 }
 
-func (s *Snake) CutFront(stdscr *gc.Window) {
+func (s *Snake) CutFront() {
 	currentSegment := s.start
 
 	for currentSegment.next.next != nil {
@@ -113,10 +119,6 @@ func (s *Snake) CutFront(stdscr *gc.Window) {
 		currentSegment.x = currentSegment.next.x
 		currentSegment = currentSegment.next
 	}
-
-	stdscr.MovePrint(8, 0, currentSegment.y)
-	stdscr.MovePrint(9, 0, currentSegment.x)
-
 }
 
 func (s *Snake) RenderSnake(stdscr *gc.Window) {
@@ -257,8 +259,14 @@ loop:
 		}
 
 		stdscr.MovePrint(2, 0, food_y, food_x)
+
+		if snake_tail.y > rows || snake_tail.y < 0 || snake_tail.x > cols || snake_tail.x < 0 {
+			stdscr.MovePrint((rows / 2), cols/2, "GAME OVER")
+		}
+
 		stdscr.ColorOff(1)
 
+		newSnake.CutFront()
 		// Append new segment in new direction
 		switch d {
 		case North:
@@ -271,7 +279,20 @@ loop:
 			newSnake.AppendTail(East)
 		}
 
-		newSnake.CutFront(stdscr)
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
+		newSnake.CutFront()
 
 		// Render snake with altered position
 		newSnake.RenderSnake(stdscr)
