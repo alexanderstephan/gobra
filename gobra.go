@@ -145,18 +145,9 @@ func (s *Snake) RenderSnake(stdscr *gc.Window) {
 	}
 }
 
-func (f *Food) spawnFood(stdscr *gc.Window) Food {
-	val1, val2 := stdscr.MaxYX()
-	food_y := rand.Intn(val1)
-	food_x := rand.Intn(val2)
-	stdscr.MoveAddChar(food_y, food_x, food_char)
-	random_food := Food{y: food_y, x: food_x}
-	return random_food
-}
-
-func setSnakeDir(stdscr *gc.Window, snake *gc.Window, y, x int) bool {
+func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
 	rows, cols := stdscr.MaxYX()
-	k := snake.GetChar()
+	k := input.GetChar()
 
 	switch byte(k) {
 	case 'q':
@@ -223,13 +214,13 @@ func main() {
 	y, x := rows/2, cols/2
 
 	// Create a rectangle window that is a placeholder for the snake
-	var snake *gc.Window
-	snake, err = gc.NewWindow(0, 0, y, x)
+	var input *gc.Window
+	input, err = gc.NewWindow(0, 0, y, x)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	snake.Refresh()
+	input.Refresh()
 
 	// Init snake
 	newSnake := &Snake{}
@@ -242,10 +233,10 @@ func main() {
 	stdscr.Refresh()
 
 	// Threshold for timeout
-	snake.Timeout(100)
+	input.Timeout(100)
 
 	// Wait for keyboard input
-	snake.Keypad(true)
+	input.Keypad(true)
 
 loop:
 	for {
@@ -302,7 +293,7 @@ loop:
 		newSnake.RenderSnake(stdscr)
 
 		// setSnakeDir returns false on exit -> interrupt loop
-		if !setSnakeDir(stdscr, snake, y, x) {
+		if !setSnakeDir(stdscr, input, y, x) {
 			break loop
 		}
 
@@ -312,5 +303,5 @@ loop:
 		// Flush characters that have changed
 		gc.Update()
 	}
-snake.Delete()
+	input.Delete()
 }
