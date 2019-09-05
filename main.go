@@ -175,7 +175,7 @@ loop:
 
 		// Detect boundaries
 		if snake_head.y > rows || snake_head.y < 0 || snake_head.x > cols || snake_head.x < 0 {
-			stdscr.MovePrint((rows / 2), cols/2, "GAME OVER")
+			stdscr.MovePrint((rows / 2), (cols/2)-6, "GAME OVER")
 		}
 
 		// Move snake by one cell in the new direction
