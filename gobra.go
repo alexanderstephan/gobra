@@ -82,11 +82,19 @@ func GrowSnake(size int) {
 
 }
 
+func HandleSnakeCollisions() {
+
+}
+
 func RenderSnake(stdscr *gc.Window) {
 	currentSegment := snake.Front()
 
 	for currentSegment != nil {
-		stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_body))
+		if (snake_active == true) {
+			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_alive))
+		} else {
+			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_dead))
+		}
 		currentSegment = currentSegment.Next()
 	}
 }

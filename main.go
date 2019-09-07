@@ -9,10 +9,12 @@ import (
 )
 
 const food_char = 'X'
-const snake_body = 'O'
+const snake_alive = 'O'
+const snake_dead = '+'
 const start_size = 5
 
 var snake = list.New()
+var snake_active bool
 
 type Segment struct {
 	y, x int
@@ -87,6 +89,7 @@ func main() {
 
 	// Init snake
 	InitSnake(stdscr)
+	snake_active = true
 
 	// Setup frame counter
 	frame_counter := 0
@@ -108,7 +111,6 @@ loop:
 
 		stdscr.ColorOn(1)
 
-		stdscr.MovePrint(0, 0, "Use vim bindings to move the snake. Press 'q' to exit")
 		stdscr.MovePrint(1, 0, "DEBUG:")
 		stdscr.MovePrint(2, 0, frame_counter)
 		stdscr.MovePrint(3, 0, d)
@@ -129,21 +131,36 @@ loop:
 		// Draw food
 		stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
 
-		// Detect boundaries
-		if snake.Front().Value.(Segment).y > rows || snake.Front().Value.(Segment).y < 0 || snake.Front().Value.(Segment).x > cols || snake.Front().Value.(Segment).x < 0 {
-			stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
-		}
-
 		// setSnakeDir returns false on exit -> interrupt loop
 		if !setSnakeDir(input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
 			break loop
 		}
 
-		// Move snake by one cell in the new direction
-		MoveSnake()
+		// Check if head is element of the body
+		e := snake.Front().Next()
+		for e != nil {
+			if (snake.Front().Value.(Segment).y == e.Value.(Segment).y) && (snake.Front().Value.(Segment).x == e.Value.(Segment).x) {
+				stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
+				snake_active = false
+			}
+			e = e.Next()
+		}
+
+		// Detect boundaries
+		if (snake.Front().Value.(Segment).y > rows) || (snake.Front().Value.(Segment).y < 0) || (snake.Front().Value.(Segment).x > cols) || (snake.Front().Value.(Segment).x < 0) {
+			stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
+			snake_active = false
+		}
 
 		// Render snake with altered position
-		RenderSnake(stdscr)
+		if snake_active == true {
+			// Move snake by one cell in the new direction
+			MoveSnake()
+			RenderSnake(stdscr)
+		}
+		if snake_active == false  {
+			RenderSnake(stdscr)
+		}
 
 		// Turn off color
 		stdscr.ColorOff(1)
