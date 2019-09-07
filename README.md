@@ -1,18 +1,4 @@
- 
- ``__ _  ___ | |__  _ __ __ _
-  
-  
- / _` |/ _ \| '_ \| '__/ _` |
- 
- 
-| (_| | (_) | |_) | | | (_| |
 
-
- \__, |\___/|_.__/|_|  \__,_|
- 
- 
- |___/``
- 
 ## Build instructions: 
 
 _Dependencies_: e.g on Arch Linux: ``sudo pacman -S ncurses go``
