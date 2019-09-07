@@ -1,6 +1,5 @@
  
- 
- __ _  ___ | |__  _ __ __ _
+ ``__ _  ___ | |__  _ __ __ _
   
   
  / _` |/ _ \| '_ \| '__/ _` |
@@ -12,11 +11,11 @@
  \__, |\___/|_.__/|_|  \__,_|
  
  
- |___/
+ |___/``
  
 ## Build instructions: 
 
-Dependencies: e.g on Arch Linux: ``sudo pacman -S ncurses go``
+_Dependencies_: e.g on Arch Linux: ``sudo pacman -S ncurses go``
 
 1. Clone repository: ``https://github.com/alexanderstephan/gobra.git``
 2. Change directory into folder: ``cd gobra``
