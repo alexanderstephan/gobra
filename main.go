@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	gc "github.com/rthornton128/goncurses"
 	"log"
 	"math/rand"
@@ -9,17 +10,16 @@ import (
 
 const food_char = 'X'
 const snake_body = 'O'
-const start_size = 20
+const start_size = 5
+
+var snake = list.New()
 
 type Segment struct {
 	y, x int
-	next *Segment
 }
 
-type Snake struct {
-	length int
-	start  *Segment
-	end    *Segment
+type Food struct {
+	y, x int
 }
 
 type Direction int
@@ -31,41 +31,10 @@ const (
 	West
 )
 
-var d Direction = West
+var d Direction = East
 
 func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
-}
-
-func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
-	// Get screen dimensions
-	rows, cols := stdscr.MaxYX()
-
-	// Get input from a dedicated window, otherwise stdscr would be blocked
-	k := input.GetChar()
-
-	// Define input handlers with interrupt condition
-	switch byte(k) {
-	case 'h':
-		if x > 0 && d != East {
-			d = West
-		}
-	case 'l':
-		if x < cols && d != West {
-			d = East
-		}
-	case 'k':
-		if y > 1 && d != South {
-			d = North
-		}
-	case 'j':
-		if y < rows && d != North {
-			d = South
-		}
-	case 'q':
-		return false
-	}
-	return true
 }
 
 func main() {
@@ -79,7 +48,7 @@ func main() {
 	// End is required to preserve terminal after execution
 	defer gc.End()
 
-	// Randomize pseudo random fucntions
+	// Randomize pseudo random functions
 	rand.Seed(time.Now().Unix())
 
 	// Has the terminal the capability to use color?
@@ -107,12 +76,9 @@ func main() {
 	// Use maximum screen width
 	rows, cols := stdscr.MaxYX()
 
-	// Define object dimensions
-	y, x := rows/2, cols/2
-
 	// Create a rectangle window that is a placeholder for the snake
 	var input *gc.Window
-	input, err = gc.NewWindow(0, 0, y, x)
+	input, err = gc.NewWindow(0, 0, 0, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,14 +86,13 @@ func main() {
 	input.Refresh()
 
 	// Init snake
-	newSnake := &Snake{}
-	newSnake.InitSnake(stdscr)
+	InitSnake(stdscr)
 
+	// Setup frame counter
 	frame_counter := 0
 
 	// Init food
-	var food_y, food_x int
-	stdscr.Refresh()
+	newFood := &Food{}
 
 	// Threshold for timeout
 	input.Timeout(100)
@@ -141,69 +106,57 @@ loop:
 		stdscr.Refresh()
 		stdscr.Erase()
 
-		// Show controls
 		stdscr.ColorOn(1)
+
 		stdscr.MovePrint(0, 0, "Use vim bindings to move the snake. Press 'q' to exit")
-		stdscr.MovePrint(1, 0, newSnake.length)
-		stdscr.MovePrint(3, 0, frame_counter)
+		stdscr.MovePrint(1, 0, "DEBUG:")
+		stdscr.MovePrint(2, 0, frame_counter)
+		stdscr.MovePrint(3, 0, d)
+		stdscr.MovePrint(4, 0, snake.Front().Value.(Segment).y)
+		stdscr.MovePrint(4, 3, snake.Front().Value.(Segment).x)
 
 		// Init food position
-		if food_y == 0 && food_x == 0 {
-			food_y = rand.Intn(rows)
-			food_x = rand.Intn(cols)
-		}
-
-		// Draw food
-		stdscr.MoveAddChar(food_y, food_x, food_char)
-
-		// Iterate over list until we get the snakes head
-		snake_head := newSnake.start
-
-		for snake_head.next != nil {
-			snake_head = snake_head.next
+		if newFood.y == 0 && newFood.x == 0 {
+			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
 		}
 
 		// Detect food collision
-		if snake_head.y == food_y && snake_head.x == food_x {
-			food_y = rand.Intn(rows)
-			food_x = rand.Intn(cols)
-			stdscr.MoveAddChar(food_y, food_x, food_char)
+		if snake.Front().Value.(Segment).y == newFood.y && snake.Front().Value.(Segment).x == newFood.x {
+			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
 		}
 
-		// Draw new food
-		stdscr.MovePrint(2, 0, food_y, food_x)
+		stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
 
 		// Detect boundaries
-		if snake_head.y > rows || snake_head.y < 0 || snake_head.x > cols || snake_head.x < 0 {
-			stdscr.MovePrint((rows / 2), (cols/2)-6, "GAME OVER")
+		if snake.Front().Value.(Segment).y > rows || snake.Front().Value.(Segment).y < 0 || snake.Front().Value.(Segment).x > cols || snake.Front().Value.(Segment).x < 0 {
+			stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
+		}
+
+		// setSnakeDir returns false on exit -> interrupt loop
+		if !setSnakeDir(stdscr, input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
+			break loop
 		}
 
 		// Move snake by one cell in the new direction
 		switch d {
 		case North:
-			newSnake.MoveSnake(North)
+			MoveSnake(North)
 		case South:
-			newSnake.MoveSnake(South)
+			MoveSnake(South)
 		case West:
-			newSnake.MoveSnake(West)
+			MoveSnake(West)
 		case East:
-			newSnake.MoveSnake(East)
+			MoveSnake(East)
 		}
 
-		// Cut off unneeded space
-		newSnake.CutFront()
+		// Render snake with altered position
+		RenderSnake(stdscr)
+
+		stdscr.ColorOff(1)
 
 		// Count frames for debug purposes
 		frame_counter++
 
-		// Render snake with altered position
-		newSnake.RenderSnake(stdscr)
-
-		stdscr.ColorOff(1)
-		// setSnakeDir returns false on exit -> interrupt loop
-		if !setSnakeDir(stdscr, input, y, x) {
-			break loop
-		}
 
 		// Refresh changes in screen buffer
 		stdscr.Refresh()

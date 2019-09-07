@@ -1,110 +1,73 @@
-package main 
+package main
 
 import (
 	gc "github.com/rthornton128/goncurses"
 )
 
-func (s *Snake) InsertSegments(newSegment *Segment) {
-	if s.length == 0 {
-		s.start = newSegment
-	} else {
-		currentSegment := s.start
+func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
+	// Get input from a dedicated window, otherwise stdscr would be blocked
+	k := input.GetChar()
 
-		// Traverse the list until the next node is empty
-		for currentSegment.next != nil {
-			currentSegment = currentSegment.next
+	// Define input handlers with interrupt condition
+	switch byte(k) {
+	case 'w':
+		if d != South {
+			d = North
 		}
-		// Append new segment
-		currentSegment.next = newSegment
+	case 'a':
+		if d != East {
+			d = West
+		}
+	case 's':
+		if d != North {
+			d = South
+		}
+	case 'd':
+		if d != West {
+			d = East
+		}
+
+
+	case 'q':
+		return false
 	}
-	// In both cases increment by one
-	s.length++
+	return true
 }
 
-func (s *Snake) MoveSnake(newDir Direction) {
-	// Init starting position
-	currentSegment := s.start
+func MoveSnake(newDir Direction) {
+	snake.Remove(snake.Back())
 
-	for currentSegment.next != nil {
-		currentSegment.y = currentSegment.next.y
-		currentSegment.x = currentSegment.next.x
-		currentSegment = currentSegment.next
-	}
+	// Increment or decrement last position
+	head_y := snake.Front().Value.(Segment).y
+	head_x := snake.Front().Value.(Segment).x
 
-	// Move currentSegment to the last element in the list
-	for currentSegment.next != nil {
-		currentSegment = currentSegment.next
-	}
-
-	// Increment or decremt last position
 	switch newDir {
 	case North:
-		currentSegment.y--
+		head_y--
 	case South:
-		currentSegment.y++
+		head_y++
 	case West:
-		currentSegment.x--
+		head_x--
 	case East:
-		currentSegment.x++
-	}
-	// Append node with new position
-	//newNode := &Segment{y: currentSegment.y, x: currentSegment.x}
-	//s.InsertSegments(newNode)
-
-	currentSegment = s.start
-
-	for currentSegment.next != nil {
-		currentSegment.y = currentSegment.next.y
-		currentSegment.x = currentSegment.next.x
-		currentSegment = currentSegment.next
+		head_x++
 	}
 
-	s.length++
+	snake.PushFront(Segment{head_y, head_x})
 }
 
-func (s *Snake) CutTail() {
-	if s.length <= 3 {
-		return
-	}
-	var previousSegment *Segment
-	currentSegment := s.start
+func InitSnake(stdscr *gc.Window) {
+	screen_y , screen_x := stdscr.MaxYX()
 
-	for currentSegment.next != nil {
-		previousSegment = currentSegment
-		currentSegment = currentSegment.next
-	}
-
-	// currentSegment = currentSegment.next not possible since previousSegment wouldn't be unused
-	previousSegment.next = currentSegment.next
-
-	s.length--
-}
-
-func (s *Snake) InitSnake(stdscr *gc.Window) {
-	snake_pos_y, snake_pos_x := stdscr.MaxYX()
-
-	for i := 0; i < start_size; i++ {
-		node := Segment{y: snake_pos_y / 2, x: snake_pos_x/2 - i}
-		s.InsertSegments(&node)
+	for i := 0; i < start_size ; i++ {
+		snake.PushFront(Segment{y: screen_y/2, x: screen_x/2+i})
 	}
 }
 
-func (s *Snake) CutFront() {
-	currentSegment := s.start
+func RenderSnake(stdscr *gc.Window) {
+	currentSegment := snake.Front()
 
-	for currentSegment.next != nil {
-		currentSegment.y = currentSegment.next.y
-		currentSegment.x = currentSegment.next.x
-		currentSegment = currentSegment.next
-	}
-	s.length--
-}
-
-func (s *Snake) RenderSnake(stdscr *gc.Window) {
-	currentSegment := s.start
 	for currentSegment != nil {
-		stdscr.MoveAddChar(currentSegment.y, currentSegment.x, gc.Char(snake_body))
-		currentSegment = currentSegment.next
+		stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_body))
+		currentSegment = currentSegment.Next()
 	}
 }
-
