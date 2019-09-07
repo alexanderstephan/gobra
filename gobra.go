@@ -4,7 +4,15 @@ import (
 	gc "github.com/rthornton128/goncurses"
 )
 
-func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
+func InitSnake(stdscr *gc.Window) {
+	screen_y , screen_x := stdscr.MaxYX()
+
+	for i := 0; i < start_size ; i++ {
+		snake.PushFront(Segment{y: screen_y/2, x: screen_x/2+i})
+	}
+}
+
+func setSnakeDir(input *gc.Window, y, x int) bool {
 	// Get input from a dedicated window, otherwise stdscr would be blocked
 	k := input.GetChar()
 
@@ -26,22 +34,20 @@ func setSnakeDir(stdscr *gc.Window, input *gc.Window, y, x int) bool {
 		if d != West {
 			d = East
 		}
-
-
 	case 'q':
 		return false
 	}
 	return true
 }
 
-func MoveSnake(newDir Direction) {
+func MoveSnake() {
 	snake.Remove(snake.Back())
 
 	// Increment or decrement last position
 	head_y := snake.Front().Value.(Segment).y
 	head_x := snake.Front().Value.(Segment).x
 
-	switch newDir {
+	switch d {
 	case North:
 		head_y--
 	case South:
@@ -55,12 +61,25 @@ func MoveSnake(newDir Direction) {
 	snake.PushFront(Segment{head_y, head_x})
 }
 
-func InitSnake(stdscr *gc.Window) {
-	screen_y , screen_x := stdscr.MaxYX()
+func GrowSnake(size int) {
+	for i := 0; i < size; i++ {
+		tail_y := snake.Back().Value.(Segment).y
+		tail_x := snake.Back().Value.(Segment).x
 
-	for i := 0; i < start_size ; i++ {
-		snake.PushFront(Segment{y: screen_y/2, x: screen_x/2+i})
+		switch d {
+		case North:
+			tail_y++
+		case South:
+			tail_y--
+		case West:
+			tail_x++
+		case East:
+			tail_x--
+		}
+		snake.PushBack(Segment{y:tail_y, x:tail_x})
 	}
+
+
 }
 
 func RenderSnake(stdscr *gc.Window) {

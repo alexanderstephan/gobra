@@ -123,8 +123,10 @@ loop:
 		// Detect food collision
 		if snake.Front().Value.(Segment).y == newFood.y && snake.Front().Value.(Segment).x == newFood.x {
 			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
+			GrowSnake(5)
 		}
 
+		// Draw food
 		stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
 
 		// Detect boundaries
@@ -133,25 +135,17 @@ loop:
 		}
 
 		// setSnakeDir returns false on exit -> interrupt loop
-		if !setSnakeDir(stdscr, input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
+		if !setSnakeDir(input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
 			break loop
 		}
 
 		// Move snake by one cell in the new direction
-		switch d {
-		case North:
-			MoveSnake(North)
-		case South:
-			MoveSnake(South)
-		case West:
-			MoveSnake(West)
-		case East:
-			MoveSnake(East)
-		}
+		MoveSnake()
 
 		// Render snake with altered position
 		RenderSnake(stdscr)
 
+		// Turn off color
 		stdscr.ColorOff(1)
 
 		// Count frames for debug purposes
