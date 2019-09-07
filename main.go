@@ -15,6 +15,7 @@ const start_size = 5
 
 var snake = list.New()
 var snake_active bool
+var debug_info bool = false
 
 type Segment struct {
 	y, x int
@@ -110,12 +111,13 @@ loop:
 		stdscr.Erase()
 
 		stdscr.ColorOn(1)
-
-		stdscr.MovePrint(1, 0, "DEBUG:")
-		stdscr.MovePrint(2, 0, frame_counter)
-		stdscr.MovePrint(3, 0, d)
-		stdscr.MovePrint(4, 0, snake.Front().Value.(Segment).y)
-		stdscr.MovePrint(4, 3, snake.Front().Value.(Segment).x)
+		if ( debug_info == true ) {
+			stdscr.MovePrint(1, 0, "DEBUG:")
+			stdscr.MovePrint(2, 0, frame_counter)
+			stdscr.MovePrint(3, 0, d)
+			stdscr.MovePrint(4, 0, snake.Front().Value.(Segment).y)
+			stdscr.MovePrint(4, 3, snake.Front().Value.(Segment).x)
+		}
 
 		// Init food position
 		if newFood.y == 0 && newFood.x == 0 {
