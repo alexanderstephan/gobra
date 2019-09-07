@@ -11,11 +11,12 @@ import (
 const food_char = 'X'
 const snake_alive = 'O'
 const snake_dead = '+'
-const start_size = 5
+const start_size = 20
+const grow_rate = 4
 
 var snake = list.New()
 var snake_active bool
-var debug_info bool = false
+var debug_info bool = true
 
 type Segment struct {
 	y, x int
@@ -38,6 +39,18 @@ var d Direction = East
 
 func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
+}
+
+func CheckFood(newFood *Food, rows, cols int) bool {
+	e := snake.Front()
+
+	for e.Next() != nil {
+		if newFood.y == e.Value.(Segment).y && newFood.x == e.Value.(Segment).x {
+			return false
+		}
+		e = e.Next()
+	}
+	return true
 }
 
 func main() {
@@ -72,11 +85,11 @@ func main() {
 	gc.CBreak(true)
 
 	// Set colors
-	if err := gc.InitPair(1, gc.C_BLACK, gc.C_GREEN); err != nil {
+	if err := gc.InitPair(1, gc.C_GREEN, gc.C_BLACK); err != nil {
 		log.Fatal("InitPair failed: ", err)
 	}
 
-	if err := gc.InitPair(2, gc.C_BLACK, gc.C_RED); err != nil {
+	if err := gc.InitPair(2, gc.C_RED, gc.C_BLACK); err != nil {
 		log.Fatal("InitPair failed: ", err)
 	}
 
@@ -113,34 +126,32 @@ loop:
 		stdscr.Refresh()
 		stdscr.Erase()
 
-
-		if ( debug_info == true ) {
+		if debug_info == true {
 			frame_counter++
 			stdscr.MovePrint(1, 0, "DEBUG:")
 			stdscr.MovePrint(2, 0, frame_counter)
 			stdscr.MovePrint(3, 0, d)
 			stdscr.MovePrint(4, 0, snake.Front().Value.(Segment).y)
 			stdscr.MovePrint(4, 3, snake.Front().Value.(Segment).x)
-		}
+			stdscr.MovePrint(5, 0, newFood.y)
+			stdscr.MovePrint(5, 3, newFood.x)
+			stdscr.MovePrint(6, 0, rows)
+			stdscr.MovePrint(6, 3, cols)
+			stdscr.MovePrint(7,0, rune(stdscr.MoveInChar(1,20)))
 
+		}
 
 		// Init food position
 		if newFood.y == 0 && newFood.x == 0 {
-			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
+			newFood = &Food{y: rows/2, x: cols/2+15}
 		}
-
 
 		// Detect food collision
 		if snake.Front().Value.(Segment).y == newFood.y && snake.Front().Value.(Segment).x == newFood.x {
 			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
-			GrowSnake(5)
+			GrowSnake(grow_rate)
 		}
-		stdscr.ColorOn(2)
 
-		// Draw food
-		stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
-
-		stdscr.ColorOn(2)
 
 		// setSnakeDir returns false on exit -> interrupt loop
 		if !setSnakeDir(input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
@@ -151,15 +162,19 @@ loop:
 		e := snake.Front().Next()
 		for e != nil {
 			if (snake.Front().Value.(Segment).y == e.Value.(Segment).y) && (snake.Front().Value.(Segment).x == e.Value.(Segment).x) {
+				stdscr.ColorOn(2)
 				stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
+				stdscr.ColorOff(2)
 				snake_active = false
 			}
 			e = e.Next()
 		}
 
 		// Detect boundaries
-		if (snake.Front().Value.(Segment).y > rows) || (snake.Front().Value.(Segment).y < 0) || (snake.Front().Value.(Segment).x > cols) || (snake.Front().Value.(Segment).x < 0) {
+		if (snake.Front().Value.(Segment).y > rows-1) || (snake.Front().Value.(Segment).y < 0) || (snake.Front().Value.(Segment).x > cols-1) || (snake.Front().Value.(Segment).x < 0) {
+			stdscr.ColorOn(2)
 			stdscr.MovePrint((rows/2)-1, (cols/2)-4, "GAME OVER")
+			stdscr.ColorOff(2)
 			snake_active = false
 		}
 
@@ -171,8 +186,17 @@ loop:
 			MoveSnake()
 			RenderSnake(stdscr)
 		}
-		if snake_active == false  {
+		if snake_active == false {
 			RenderSnake(stdscr)
+		}
+
+		// Draw food
+		if stdscr.MoveInChar(newFood.y, newFood.x) == ' ' {
+			stdscr.ColorOn(2)
+			stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
+			stdscr.ColorOff(2)
+		} else {
+			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
 		}
 
 		stdscr.ColorOff(1)
