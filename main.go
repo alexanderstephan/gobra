@@ -76,6 +76,10 @@ func main() {
 		log.Fatal("InitPair failed: ", err)
 	}
 
+	if err := gc.InitPair(2, gc.C_BLACK, gc.C_RED); err != nil {
+		log.Fatal("InitPair failed: ", err)
+	}
+
 	// Use maximum screen width
 	rows, cols := stdscr.MaxYX()
 
@@ -85,18 +89,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	input.Refresh()
 
 	// Init snake
 	InitSnake(stdscr)
 	snake_active = true
 
-	// Setup frame counter
-	frame_counter := 0
-
 	// Init food
 	newFood := &Food{}
+
+	// Init frame count
+	frame_counter := 0
 
 	// Threshold for timeout
 	input.Timeout(100)
@@ -110,8 +113,9 @@ loop:
 		stdscr.Refresh()
 		stdscr.Erase()
 
-		stdscr.ColorOn(1)
+
 		if ( debug_info == true ) {
+			frame_counter++
 			stdscr.MovePrint(1, 0, "DEBUG:")
 			stdscr.MovePrint(2, 0, frame_counter)
 			stdscr.MovePrint(3, 0, d)
@@ -119,19 +123,24 @@ loop:
 			stdscr.MovePrint(4, 3, snake.Front().Value.(Segment).x)
 		}
 
+
 		// Init food position
 		if newFood.y == 0 && newFood.x == 0 {
 			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
 		}
+
 
 		// Detect food collision
 		if snake.Front().Value.(Segment).y == newFood.y && snake.Front().Value.(Segment).x == newFood.x {
 			newFood = &Food{y: rand.Intn(rows), x: rand.Intn(cols)}
 			GrowSnake(5)
 		}
+		stdscr.ColorOn(2)
 
 		// Draw food
 		stdscr.MoveAddChar(newFood.y, newFood.x, food_char)
+
+		stdscr.ColorOn(2)
 
 		// setSnakeDir returns false on exit -> interrupt loop
 		if !setSnakeDir(input, snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x) {
@@ -154,6 +163,8 @@ loop:
 			snake_active = false
 		}
 
+		stdscr.ColorOn(1)
+
 		// Render snake with altered position
 		if snake_active == true {
 			// Move snake by one cell in the new direction
@@ -164,12 +175,7 @@ loop:
 			RenderSnake(stdscr)
 		}
 
-		// Turn off color
 		stdscr.ColorOff(1)
-
-		// Count frames for debug purposes
-		frame_counter++
-
 
 		// Refresh changes in screen buffer
 		stdscr.Refresh()
