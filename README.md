@@ -4,7 +4,7 @@
 
 1. *Dependencies*: e.g on Arch Linux: ``sudo pacman -S ncurses go``
 
-2. *Installation*
+2. *Installation*:
 
 + Install from repository: ``go get github.com/alexanderstephan/gobra.git``
 + Execute binary: ``"$GOPATH/bin/gobra"``
