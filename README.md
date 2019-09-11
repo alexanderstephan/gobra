@@ -1,7 +1,5 @@
 ![alt text](https://github.com/alexanderstephan/gobra/blob/master/assets/gobra.svg.png "Gobra logo")
 
----
-
 ### Build instructions: 
 
 ---
