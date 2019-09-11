@@ -1,5 +1,4 @@
-![alt text](https://github.com/alexanderstephan/gobra/blob/master/assets/gobra.svg.png "Gobra logo")
-
+<img src="https://github.com/alexanderstephan/gobra/blob/master/assets/gobra.svg.png" width="250" height="77.5" />
 ### Build instructions: 
 
 ---
