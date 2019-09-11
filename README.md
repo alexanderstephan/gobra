@@ -2,9 +2,9 @@
 
 ### Build instructions: 
 
-1. Dependencies_: e.g on Arch Linux: ``sudo pacman -S ncurses go``
+1. *Dependencies*: e.g on Arch Linux: ``sudo pacman -S ncurses go``
 
-2. Installation
+2. *Installation*
 
 + Install from repository: ``go get github.com/alexanderstephan/gobra.git``
 + Execute binary: ``"$GOPATH/bin/gobra"``
@@ -15,6 +15,7 @@ Move the snake by using the WASD keys. The more food you collect, the larger the
 
 ### Options
 
-``-V`` enables vim keybindings _hjkl
+``-V`` enables `vim` keybindings
+
 ``-D`` outputs useful debug information
 
