@@ -12,38 +12,11 @@ func InitSnake(stdscr *gc.Window) {
 	}
 }
 
-func setSnakeDir(input *gc.Window, y, x int) bool {
-	// Get input from a dedicated window, otherwise stdscr would be blocked
-	k := input.GetChar()
-
-	// Define input handlers with interrupt condition
-	switch byte(k) {
-	case 'w':
-		if d != South {
-			d = North
-		}
-	case 'a':
-		if d != East {
-			d = West
-		}
-	case 's':
-		if d != North {
-			d = South
-		}
-	case 'd':
-		if d != West {
-			d = East
-		}
-	case 'q':
-		return false
-	}
-	return true
-}
-
 func MoveSnake() {
 	// Delete last element of the snake
 	snake.Remove(snake.Back())
 
+	// Read coordinates of the first snake segment
 	head_y := snake.Front().Value.(Segment).y
 	head_x := snake.Front().Value.(Segment).x
 
