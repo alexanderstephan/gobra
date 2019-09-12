@@ -38,23 +38,23 @@ func MoveSnake() {
 
 func GrowSnake(size int) {
 	for i := 0; i < size; i++ {
-		tail_y := snake.Back().Value.(Segment).y
-		tail_x := snake.Back().Value.(Segment).x
+		tailY := snake.Back().Value.(Segment).y
+		tailX := snake.Back().Value.(Segment).x
 
 		// Move segment in the opposite direction
 		switch d {
 		case North:
-			tail_y++
+			tailY++
 		case South:
-			tail_y--
+			tailY--
 		case West:
-			tail_x++
+			tailX++
 		case East:
-			tail_x--
+			tailX--
 		}
 
 		// Insert segment at back with new position
-		snake.PushBack(Segment{y:tail_y, x:tail_x})
+		snake.PushBack(Segment{y: tailY, x: tailX})
 	}
 }
 
