@@ -25,4 +25,4 @@ Move the snake by using the WASD keys. The more food you collect, the larger the
 
 ``-D`` outputs useful debug information
 
-``-N`` open 
+``-N`` open boundaries
