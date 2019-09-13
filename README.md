@@ -21,8 +21,8 @@ Move the snake by using the WASD keys. The more food you collect, the larger the
 
 ---
 
-``-V`` enables `vim` keybindings
+``-v`` enables `vim` keybindings
 
-``-D`` outputs useful debug information
+``-d`` outputs useful debug information
 
-``-N`` open boundaries
+``-n`` open boundaries
