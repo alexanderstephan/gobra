@@ -6,9 +6,9 @@ import (
 
 // Draw snake in the screen center pointing East
 func InitSnake(stdscr *gc.Window) {
-	screen_y , screen_x := stdscr.MaxYX()
-	for i := 0; i < start_size ; i++ {
-		snake.PushFront(Segment{y: screen_y/2, x: screen_x/2+i})
+	screen_y, screen_x := stdscr.MaxYX()
+	for i := 0; i < startSize; i++ {
+		snake.PushFront(Segment{y: screen_y / 2, x: screen_x/2 + i})
 	}
 }
 
@@ -62,11 +62,15 @@ func RenderSnake(stdscr *gc.Window) {
 	// Traverse list and draw every segment to the screen depending on the snake state
 	currentSegment := snake.Front()
 	for currentSegment != nil {
-		if (snake_active == true) {
-			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_alive))
+		if snakeActive == true {
+			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snakeAlive))
 		} else {
-			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snake_dead))
+			stdscr.MoveAddChar(currentSegment.Value.(Segment).y, currentSegment.Value.(Segment).x, gc.Char(snakeDead))
 		}
 		currentSegment = currentSegment.Next()
+	}
+	// Attach head
+	if snakeActive {
+		stdscr.MoveAddChar(snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x, snakeHead)
 	}
 }
