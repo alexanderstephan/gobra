@@ -1,4 +1,6 @@
-## 🐍 gobra - Feature-rich snake written in Ncurses
+## gobra 🐍 
+
+*Feature-rich snake written in Ncurses*
 
 ### Build instructions: 
 
