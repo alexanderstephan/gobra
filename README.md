@@ -1,4 +1,4 @@
-<img src="https://github.com/alexanderstephan/gobra/blob/master/assets/gobra.svg.png" width="250" height="77.5" />
+## 🐍 gobra - Feature-rich snake written in Ncurses
 
 ### Build instructions: 
 
@@ -25,4 +25,6 @@ Move the snake by using the WASD keys. The more food you collect, the larger the
 
 ``-d`` outputs useful debug information
 
-``-n`` open boundaries
+``-n`` opens boundaries
+
+``-s`` enables sound
