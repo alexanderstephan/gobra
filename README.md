@@ -1,6 +1,6 @@
 ## gobra 🐍 
 
-*Feature-rich snake written in Ncurses*
+*Feature-rich snake clone in Go using ncurses*
 
 ### Build instructions: 
 
