@@ -54,13 +54,20 @@ var (
 )
 
 // Logo
-var gobraAscii = []string{
-	`   ___     ___   | |__    __ __   ____`,
-	` /  _  |  / _ \  | '_ \  | '__/  / _  |`,
-	`|  (_| |   (_)   | |_)   | |    | (_| |`,
-	` \__,  |  \___/  |_.__/  |_|     \__,_|`,
-	` |___ /`,
+var gobraAscii = []string {
+	`                  888                     `,
+	`                  888                     `,
+	`                  888                     `,
+	` .d88b.   .d88b.  88888b.  888d888 8888b. `,
+	`d88P"88b d88""88b 888 "88b 888P"      "88b`,
+	`888  888 888  888 888  888 888    .d888888`,
+	`Y88b 888 Y88..88P 888 d88P 888    888  888`,
+	` "Y88888  "Y88P"  88888P"  888    "Y888888`,
+	`     888                                  `,
+	`Y8b d88P                                  `,
+	`"Y88P"                                    `,
 }
+
 
 type Segment struct {
 	y, x int
@@ -138,16 +145,18 @@ func NewGame(stdscr *gc.Window, myFood *Food) {
 
 func GameOver(menu *gc.Window, rows, cols int) {
 	snakeActive = false
+
 	menu.ColorOn(2)
-	menu.MovePrint((rows / 2), (cols/2)-4, "GAME OVER")
+	menu.MovePrint(rows/2-1, cols/2-15, "You died. Better luck next time!")
 	menu.ColorOff(2)
+
 	menu.ColorOn(1)
-	menu.MovePrint(rows/2+3, cols/2-12, "Press 'SPACE' to play again")
+	menu.MovePrint(rows/2+1, cols/2-13, "Press 'SPACE' to play again!")
 	menu.ColorOff(1)
 
 	menu.ColorOn(3)
 	if highscore {
-		menu.MovePrint(rows/2+4, cols/2-6, "New Highscore")
+		menu.MovePrint(3, cols/2-6, "New Highscore")
 	}
 	menu.ColorOff(3)
 }
@@ -193,8 +202,6 @@ func HandleSnake(stdscr *gc.Window, rows int, cols int) {
 	}
 	if snakeActive == false {
 		stdscr.ColorOn(6)
-		stdscr.Erase()
-		stdscr.Refresh()
 		DrawBorder(stdscr)
 		RenderSnake(stdscr)
 		GameOver(stdscr, rows, cols)
@@ -282,16 +289,11 @@ func DrawBorder(stdscr *gc.Window) {
 }
 
 func DrawLogo(stdscr *gc.Window, rows, cols int) {
-	var i int
-	for i = 0; i < len(gobraAscii); i++ {
-		stdscr.ColorOn(3)
-		stdscr.MovePrint(rows/2+i-3, cols/2-20, gobraAscii[i])
-		stdscr.ColorOff(3)
+	stdscr.ColorOn(3)
+	for i := 0; i < len(gobraAscii); i++ {
+		stdscr.MovePrint(rows/2+i-5, cols/2-20, gobraAscii[i])
 	}
-	stdscr.ColorOn(1)
-	stdscr.MovePrint(rows/2+i+1, cols/2-25, "Control the snake with 'WASD'. Press Shift + Q to quit")
-	stdscr.Refresh()
-	stdscr.ColorOff(1)
+	stdscr.ColorOff(3)
 }
 
 func InitColors() {
@@ -416,6 +418,7 @@ func main() {
 
 	// Welcome screen with logo and controls
 	DrawLogo(stdscr, rows, cols)
+	stdscr.Refresh()
 	time.Sleep(1 * time.Second)
 
 loop:
