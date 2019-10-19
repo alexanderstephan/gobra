@@ -6,12 +6,28 @@
 
 ---
 
-1. Dependencies: e.g on Arch Linux: ``sudo pacman -S ncurses go``
+#### 1. Dependencies: 
 
-2. Installation:
++ On Arch Linux: ``sudo pacman -S ncurses go``
 
-+ Install from repository: ``go get github.com/alexanderstephan/gobra.git``
-+ Execute binary: ``"$GOPATH/bin/gobra"``
+#### 2. Installation:
+
++ Build repository:
+
+```
+make
+```
++ Install binary:
+
+```
+make install
+```
+
++ Remove binary: 
+
+```
+make uninstall
+```
 
 ### How to play
 
@@ -23,7 +39,7 @@ Move the snake by using the *WASD* keys. The more food you collect, the larger t
 
 ---
 
-``-v`` enables `vim` keybindings
+``-v, --vim`` enables `vim` keybindings
 
 ``-d`` outputs useful debug information
 
