@@ -1,4 +1,4 @@
-## gobra 🐍 
+# gobra 🐍 
 
 *Feature-rich snake clone in Go using ncurses*
 
@@ -39,10 +39,16 @@ Move the snake by using the *WASD* keys. The more food you collect, the larger t
 
 ---
 
-``-v, --vim`` enables `vim` keybindings
+``-v   enables `vim` keybindings
 
-``-d`` outputs useful debug information
+``-d`` outputs useful `debug` information
 
 ``-n`` opens boundaries
 
-``-s`` enables sound
+``-s`` enables `sound`
+
+### License
+
+---
+
+The gobra project is under [MIT license](https://github.com/alexanderstephan/gobra/blob/master/LICENSE)
