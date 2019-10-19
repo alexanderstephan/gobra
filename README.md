@@ -13,21 +13,18 @@
 #### 2. Installation:
 
 + Build repository:
-
-```
+``
 make
-```
+``
 + Install binary:
-
-```
+``
 make install
-```
+``
 
 + Remove binary: 
-
-```
+``
 make uninstall
-```
+``
 
 ### How to play
 
@@ -39,7 +36,7 @@ Move the snake by using the *WASD* keys. The more food you collect, the larger t
 
 ---
 
-``-v   enables `vim` keybindings
+``-v``  enables `vim` keybindings
 
 ``-d`` outputs useful `debug` information
 
@@ -51,4 +48,4 @@ Move the snake by using the *WASD* keys. The more food you collect, the larger t
 
 ---
 
-The gobra project is under [MIT license](https://github.com/alexanderstephan/gobra/blob/master/LICENSE)
+My gobra project is under [MIT license](https://github.com/alexanderstephan/gobra/blob/master/LICENSE).
