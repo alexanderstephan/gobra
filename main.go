@@ -54,7 +54,7 @@ var (
 )
 
 // Logo
-var gobraAscii = []string {
+var gobraAscii = []string{
 	`                  888                     `,
 	`                  888                     `,
 	`                  888                     `,
@@ -67,7 +67,6 @@ var gobraAscii = []string {
 	`Y8b d88P                                  `,
 	`"Y88P"                                    `,
 }
-
 
 type Segment struct {
 	y, x int
@@ -162,45 +161,43 @@ func GameOver(menu *gc.Window, rows, cols int) {
 }
 
 func BoundaryCheck(nobounds *bool, rows int, cols int) {
+	snakeFront := snake.Front().Value.(Segment)
+
 	// Detect boundaries
 	if !(*nobounds) {
-		if (snake.Front().Value.(Segment).y > rows-2) || (snake.Front().Value.(Segment).y < 1) || (snake.Front().Value.(Segment).x > cols-2) || (snake.Front().Value.(Segment).x < 1) {
+		if (snakeFront.y > rows-2) || (snakeFront.y < 1) || (snakeFront.x > cols-2) || (snakeFront.x < 1) {
 			snakeActive = false
 		}
 	} else {
-		// Hit bottom border
-		if snake.Front().Value.(Segment).y > rows-2 {
+		if snakeFront.y > rows-2 {
+			// Hit bottom border
 			snake.Remove(snake.Back())
-			snake.PushFront(Segment{1, snake.Front().Value.(Segment).x})
-		}
-		// Hit top border
-		if snake.Front().Value.(Segment).y < 1 {
+			snake.PushFront(Segment{1, snakeFront.x})
+		} else if snakeFront.y < 1 {
+			// Hit top border
 			snake.Remove(snake.Back())
-			snake.PushFront(Segment{rows - 2, snake.Front().Value.(Segment).x})
-		}
-		// Hit right border
-		if snake.Front().Value.(Segment).x > cols-2 {
+			snake.PushFront(Segment{rows - 2, snakeFront.x})
+		} else if snakeFront.x > cols-2 {
+			// Hit right border
 			snake.Remove(snake.Back())
-			snake.PushFront(Segment{snake.Front().Value.(Segment).y, 1})
-		}
-		// Hit left border
-		if snake.Front().Value.(Segment).x < 1 {
+			snake.PushFront(Segment{snakeFront.y, 1})
+		} else if snakeFront.x < 1 {
+			// Hit left border
 			snake.Remove(snake.Back())
-			snake.PushFront(Segment{snake.Front().Value.(Segment).y, cols - 2})
+			snake.PushFront(Segment{snakeFront.y, cols - 2})
 		}
 	}
 }
 
 func HandleSnake(stdscr *gc.Window, rows int, cols int) {
 	// Render snake with altered position
-	if snakeActive == true {
-		// Move snake by one cell in the new direction
+	// Move snake by one cell in the new direction
+	if snakeActive {
 		MoveSnake()
 		stdscr.ColorOn(1)
 		RenderSnake(stdscr)
 		stdscr.ColorOff(1)
-	}
-	if snakeActive == false {
+	} else if !snakeActive {
 		stdscr.ColorOn(6)
 		DrawBorder(stdscr)
 		RenderSnake(stdscr)
@@ -241,8 +238,10 @@ func check(e error) {
 }
 
 func HandleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
+	snakeFront := snake.Front().Value.(Segment)
+
 	// Detect food collision
-	if snake.Front().Value.(Segment).y == myFood.y && snake.Front().Value.(Segment).x == myFood.x {
+	if snakeFront.y == myFood.y && snakeFront.x == myFood.x {
 		for !TestFoodCollision(stdscr, myFood, rows, cols) {
 			myFood.y = rand.Intn(rows)
 			myFood.x = rand.Intn(cols)
@@ -271,13 +270,17 @@ func HandleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	}
 
 	// Check if head is element of the body
-	e := snake.Front().Next()
-	for e != nil {
-		if (snake.Front().Value.(Segment).y == e.Value.(Segment).y) && (snake.Front().Value.(Segment).x == e.Value.(Segment).x) {
+	// First body element is the one after the head
+	bodyElement := snake.Front().Next()
+
+	for bodyElement != nil {
+		if (snakeFront.y == bodyElement.Value.(Segment).y) && (snakeFront.x == bodyElement.Value.(Segment).x) {
 			snakeActive = false
+			// Interrupt for-loop
 			break
 		}
-		e = e.Next()
+		// Move to the next element
+		bodyElement = bodyElement.Next()
 	}
 	return true
 }
