@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/hajimehoshi/oto"
 	"io"
 	"math"
 	"time"
+
+	"github.com/hajimehoshi/oto"
 )
 
 type SineWave struct {

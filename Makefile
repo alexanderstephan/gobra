@@ -3,7 +3,7 @@ TARGET = gobra
 bindir = /usr/local/bin
 
 $(TARGET): *.go
-	$(CC) get -x github.com/rthornton128/goncurses
+	$(CC) get -x github.com/alexanderstephan/goncurses
 	$(CC) get -x github.com/hajimehoshi/oto
 	$(CC) build -x
 .PHONY all: $(TARGET)

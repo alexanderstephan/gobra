@@ -1,7 +1,7 @@
 package main
 
 import (
-	gc "github.com/rthornton128/goncurses"
+	gc "github.com/alexanderstephan/goncurses"
 )
 
 // Draw snake in the screen center pointing East

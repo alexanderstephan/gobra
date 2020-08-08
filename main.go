@@ -4,8 +4,6 @@ import (
 	"container/list"
 	"flag"
 	"fmt"
-	"github.com/hajimehoshi/oto"
-	gc "github.com/rthornton128/goncurses"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	gc "github.com/alexanderstephan/goncurses"
+	"github.com/hajimehoshi/oto"
 )
 
 // Snake init data
@@ -502,4 +503,5 @@ loop:
 	wg.Wait()
 	c.Close()
 	input.Delete()
+
 }
