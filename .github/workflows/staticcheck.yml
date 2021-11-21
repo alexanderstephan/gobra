@@ -3,9 +3,11 @@ on: ["push", "pull_request"]
 
 jobs:
   ci:
-    name: "Run CI"
+    name: "Run Staticcheck"
     runs-on: ubuntu-latest
     steps:
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install libasound2
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
