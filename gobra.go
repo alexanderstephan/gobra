@@ -69,6 +69,7 @@ func RenderSnake(stdscr *gc.Window) {
 		}
 		currentSegment = currentSegment.Next()
 	}
+
 	// Attach head
 	if snakeActive {
 		stdscr.MoveAddChar(snake.Front().Value.(Segment).y, snake.Front().Value.(Segment).x, snakeHead)

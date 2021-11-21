@@ -2,6 +2,8 @@ github.com/alexanderstephan/goncurses v0.0.0-20200808213228-94cbc32628dd h1:CL10
 github.com/alexanderstephan/goncurses v0.0.0-20200808213228-94cbc32628dd/go.mod h1:ceMh1H2Mi5wk1+YVlxmlVb6zTrn0YEZt9F1QfeAInA0=
 github.com/hajimehoshi/oto v1.0.1 h1:8AMnq0Yr2YmzaiqTg/k1Yzd6IygUGk2we9nmjgbgPn4=
 github.com/hajimehoshi/oto v1.0.1/go.mod h1:wovJ8WWMfFKvP587mhHgot/MBr4DnNy9m6EepeVGnos=
+github.com/hajimehoshi/oto/v2 v2.0.2 h1:kbMCXhKAZMVyhEEyIqEqmSf4xjfk3HPAf1tMcyKCsN0=
+github.com/hajimehoshi/oto/v2 v2.0.2/go.mod h1:rUKQmwMkqmRxe+IAof9+tuYA2ofm8cAWXFmSfzDN8vQ=
 github.com/rthornton128/goncurses v0.0.0-20210908011339-931b33a34c71 h1:1lA/ljJAwqsNo7HHUG7M4XY9dkp6aYnnW5Tglh7bEgA=
 github.com/rthornton128/goncurses v0.0.0-20210908011339-931b33a34c71/go.mod h1:AHlKFomPTwmO7H2vL8d7VNrQNQmhMi/DBhDnHRhjbCo=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8 h1:idBdZTd9UioThJp8KpM/rTSinK/ChZFBE43/WtIy8zg=

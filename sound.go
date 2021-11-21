@@ -4,8 +4,7 @@ import (
 	"io"
 	"math"
 	"time"
-
-	"github.com/hajimehoshi/oto"
+	"github.com/hajimehoshi/oto/v2"
 )
 
 type SineWave struct {
@@ -25,16 +24,11 @@ func NewSineWave(freq float64, duration time.Duration) *SineWave {
 	}
 }
 
-func Play(context *oto.Context, freq float64, duration time.Duration) error {
-	p := context.NewPlayer()
+func Play(context *oto.Context, freq float64, duration time.Duration) oto.Player {
 	s := NewSineWave(freq, duration)
-	if _, err := io.Copy(p, s); err != nil {
-		return err
-	}
-	if err := p.Close(); err != nil {
-		return err
-	}
-	return nil
+	p := context.NewPlayer(s)
+	p.Play()
+	return p
 }
 
 func (s *SineWave) Read(buf []byte) (int, error) {
@@ -99,3 +93,4 @@ func (s *SineWave) Read(buf []byte) (int, error) {
 	}
 	return n, nil
 }
+

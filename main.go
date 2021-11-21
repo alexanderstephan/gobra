@@ -11,9 +11,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
+	"os/signal"
+	"syscall"
 	gc "github.com/alexanderstephan/goncurses"
-	"github.com/hajimehoshi/oto"
+	"github.com/hajimehoshi/oto/v2"
 )
 
 // Snake init data
@@ -54,6 +55,12 @@ var (
 	bitDepthInBytes = flag.Int("bitdepthinbytes", 2, "bit depth in bytes")
 )
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 // Logo
 var gobraAscii = []string{
 	`                  888                     `,
@@ -92,7 +99,7 @@ func (d Direction) String() string {
 	return [...]string{"North", "East", "South", "West"}[d]
 }
 
-func SetDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
+func setDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 	// Get input from a dedicated window, otherwise stdscr would be blocked
 	// Define input handlers with interrupt condition
 	switch input.GetChar() {
@@ -114,7 +121,7 @@ func SetDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 		}
 	case ' ':
 		if snakeActive == false {
-			NewGame(stdscr, myFood)
+			newGame(stdscr, myFood)
 		}
 	case 'Q':
 		return false
@@ -122,7 +129,7 @@ func SetDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 	return true
 }
 
-func NewGame(stdscr *gc.Window, myFood *Food) {
+func newGame(stdscr *gc.Window, myFood *Food) {
 	// Revive the snake
 	snakeActive = true
 
@@ -143,7 +150,7 @@ func NewGame(stdscr *gc.Window, myFood *Food) {
 	globalScore = 0
 }
 
-func GameOver(menu *gc.Window, rows, cols int) {
+func gameOver(menu *gc.Window, rows, cols int) {
 	snakeActive = false
 
 	menu.ColorOn(2)
@@ -161,7 +168,7 @@ func GameOver(menu *gc.Window, rows, cols int) {
 	menu.ColorOff(3)
 }
 
-func BoundaryCheck(nobounds *bool, rows int, cols int) {
+func boundaryCheck(nobounds *bool, rows int, cols int) {
 	snakeFront := snake.Front().Value.(Segment)
 
 	// Detect boundaries
@@ -190,7 +197,7 @@ func BoundaryCheck(nobounds *bool, rows int, cols int) {
 	}
 }
 
-func HandleSnake(stdscr *gc.Window, rows int, cols int) {
+func handleSnake(stdscr *gc.Window, rows int, cols int) {
 	// Render snake with altered position
 	// Move snake by one cell in the new direction
 	if snakeActive {
@@ -200,23 +207,24 @@ func HandleSnake(stdscr *gc.Window, rows int, cols int) {
 		stdscr.ColorOff(1)
 	} else if !snakeActive {
 		stdscr.ColorOn(6)
-		DrawBorder(stdscr)
+		drawBorder(stdscr)
 		RenderSnake(stdscr)
-		GameOver(stdscr, rows, cols)
+		gameOver(stdscr, rows, cols)
 		stdscr.ColorOff(6)
 	}
 }
 
-func PrintFood(stdscr *gc.Window, newFood *Food, rows, cols int) {
+// InitFood initializes the foods position
+func printFood(stdscr *gc.Window, newFood *Food, rows, cols int) {
 	stdscr.ColorOn(2)
 	stdscr.MoveAddChar(newFood.y, newFood.x, foodChar)
 	stdscr.ColorOff(2)
 }
 
-// Init food position
-func InitFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
+// InitFood initializes the foods position
+func initFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
 	if myFood.y == 0 && myFood.x == 0 {
-		for !TestFoodCollision(stdscr, myFood, rows, cols) {
+		for !testFoodCollision(stdscr, myFood, rows, cols) {
 			myFood.y = rand.Intn(rows)
 			myFood.x = rand.Intn(cols)
 		}
@@ -225,25 +233,21 @@ func InitFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
 	}
 }
 
-func TestFoodCollision(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
+func testFoodCollision(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	if stdscr.MoveInChar(myFood.y, myFood.x) != ' ' || myFood.y == 0 || myFood.x == 0 || myFood.y == rows || myFood.x == cols {
 		return false
 	}
 	return true
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
 
-func HandleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
+
+func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	snakeFront := snake.Front().Value.(Segment)
 
 	// Detect food collision
 	if snakeFront.y == myFood.y && snakeFront.x == myFood.x {
-		for !TestFoodCollision(stdscr, myFood, rows, cols) {
+		for !testFoodCollision(stdscr, myFood, rows, cols) {
 			myFood.y = rand.Intn(rows)
 			myFood.x = rand.Intn(cols)
 		}
@@ -286,13 +290,13 @@ func HandleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	return true
 }
 
-func DrawBorder(stdscr *gc.Window) {
+func drawBorder(stdscr *gc.Window) {
 	stdscr.ColorOn(3)
 	stdscr.Box(gc.ACS_VLINE, gc.ACS_HLINE)
 	stdscr.ColorOff(3)
 }
 
-func DrawLogo(stdscr *gc.Window, rows, cols int) {
+func drawLogo(stdscr *gc.Window, rows, cols int) {
 	stdscr.ColorOn(3)
 	for i := 0; i < len(gobraAscii); i++ {
 		stdscr.MovePrint(rows/2+i-5, cols/2-20, gobraAscii[i])
@@ -300,7 +304,7 @@ func DrawLogo(stdscr *gc.Window, rows, cols int) {
 	stdscr.ColorOff(3)
 }
 
-func InitColors() {
+func initColors() {
 	// Set up colors
 	if err := gc.InitPair(1, gc.C_GREEN, gc.C_BLACK); err != nil {
 		log.Fatal("InitPair failed: ", err)
@@ -333,6 +337,16 @@ func main() {
 	noBounds := flag.Bool("n", false, "Free boundaries")
 	sound := flag.Bool("s", false, "Enable sound")
 	flag.Parse()
+
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+	    sig := <-sigs
+	    fmt.Println()
+	    fmt.Println(sig)
+	}()
 
 	// Remap to vim like bindings
 	if *vim {
@@ -374,15 +388,11 @@ func main() {
 	}
 
 	gc.Echo(false)
-
-	// Hide cursor
-	gc.Cursor(0)
-
-	// Disable input buffering
-	gc.CBreak(true)
+	gc.Cursor(0) 	// Hide cursor
+	gc.CBreak(true) // Disable input buffering
 
 	// Define colors
-	InitColors()
+	initColors()
 
 	// Create a rectangle window that is a placeholder for the snake
 	var input *gc.Window
@@ -399,29 +409,20 @@ func main() {
 	}
 
 	// Init sounds
-	c, err := oto.NewContext(*sampleRate, *channelNum, *bitDepthInBytes, 4016)
+	c, ready, err := oto.NewContext(*sampleRate, *channelNum, *bitDepthInBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var wg sync.WaitGroup
+	<- ready
 
-	// Create initial snake
-	InitSnake(stdscr)
-
-	// Snake starts alive
-	snakeActive = true
-
-	// Init frame count
-	frameCounter := 0
-
-	// Threshold for timeout
-	input.Timeout(100)
-
-	// Wait for keyboard input
-	input.Keypad(true)
+	InitSnake(stdscr)  // Create initial snake
+	snakeActive = true // Snake starts alive
+	frameCounter := 0  // Init frame count
+	input.Timeout(100) // Threshold for timeout
+	input.Keypad(true) // Wait for keyboard input
 
 	// Welcome screen with logo and controls
-	DrawLogo(stdscr, rows, cols)
+	drawLogo(stdscr, rows, cols)
 	stdscr.Refresh()
 	time.Sleep(1 * time.Second)
 
@@ -432,7 +433,7 @@ loop:
 		stdscr.Erase()
 
 		// Draw box around the screen (for collision detection)
-		DrawBorder(stdscr)
+		drawBorder(stdscr)
 
 		// Print debug Infos
 		if *debugInfo == true {
@@ -450,37 +451,31 @@ loop:
 		}
 
 		// setSnakeDir returns false on exit -> interrupt loop
-		if !SetDir(input, stdscr, &newFood) {
+		if !setDir(input, stdscr, &newFood) {
 			break loop
 		}
 
 		// Determine food position if not set yet
-		InitFood(stdscr, &newFood, rows, cols)
+		initFood(stdscr, &newFood, rows, cols)
 
 		//stdscr.Refresh()
 
 		// Display snake (alive or dead)
-		HandleSnake(stdscr, rows, cols)
+		handleSnake(stdscr, rows, cols)
 
 		// Handle collisions
-		if !HandleCollisions(stdscr, &newFood, rows, cols) && *sound {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				if err := Play(c, freqA, 100*time.Millisecond); err != nil {
-					panic(err)
-				}
-			}()
+		if !handleCollisions(stdscr, &newFood, rows, cols) && *sound {
+		    Play(c, freqA, 250 * time.Millisecond)
 		}
 
 		// Check if snake hit boundaries, if desired ports the snake to the other side of the screen
-		BoundaryCheck(noBounds, rows, cols)
+		boundaryCheck(noBounds, rows, cols)
 
 		// Render food symbol
-		PrintFood(stdscr, &newFood, rows, cols)
+		printFood(stdscr, &newFood, rows, cols)
 
 		// Overwrite border once again
-		DrawBorder(stdscr)
+		drawBorder(stdscr)
 
 		// Write score to border
 		stdscr.ColorOn(4)
@@ -488,20 +483,20 @@ loop:
 		stdscr.ColorOff(4)
 		stdscr.ColorOn(3)
 		stdscr.MoveAddChar(0, cols/2-1-(len(strconv.Itoa(globalScore))/2), '|')
+
 		if len(strconv.Itoa(globalScore))%2 == 0 {
 			stdscr.MoveAddChar(0, cols/2+(len(strconv.Itoa(globalScore))/2), '|')
 		} else {
 			stdscr.MoveAddChar(0, cols/2+1+(len(strconv.Itoa(globalScore))/2), '|')
 		}
-		stdscr.ColorOff(3)
 
+		stdscr.ColorOff(3)
 		// Refresh changes in screen buffer
 		stdscr.Refresh()
 		// Flush characters that have changed
 		gc.Update()
 	}
 	wg.Wait()
-	c.Close()
 	input.Delete()
 
 }
