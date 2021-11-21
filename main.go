@@ -4,17 +4,16 @@ import (
 	"container/list"
 	"flag"
 	"fmt"
+	gc "github.com/alexanderstephan/goncurses"
+	"github.com/hajimehoshi/oto/v2"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
-	"strconv"
-	"sync"
-	"time"
 	"os/signal"
+	"strconv"
 	"syscall"
-	gc "github.com/alexanderstephan/goncurses"
-	"github.com/hajimehoshi/oto/v2"
+	"time"
 )
 
 // Snake init data
@@ -120,7 +119,7 @@ func setDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 			d = East
 		}
 	case ' ':
-		if snakeActive == false {
+		if !snakeActive {
 			newGame(stdscr, myFood)
 		}
 	case 'Q':
@@ -154,16 +153,16 @@ func gameOver(menu *gc.Window, rows, cols int) {
 	snakeActive = false
 
 	menu.ColorOn(2)
-	menu.MovePrint(rows/2-1, cols/2-15, "You died. Better luck next time!")
+	menu.MovePrint(rows / 2 - 1, cols / 2 - 15, "You died. Better luck next time!")
 	menu.ColorOff(2)
 
 	menu.ColorOn(1)
-	menu.MovePrint(rows/2+1, cols/2-13, "Press 'SPACE' to play again!")
+	menu.MovePrint(rows / 2 + 1, cols / 2 -13, "Press 'SPACE' to play again!")
 	menu.ColorOff(1)
 
 	menu.ColorOn(3)
 	if highscore {
-		menu.MovePrint(3, cols/2-6, "New Highscore")
+		menu.MovePrint(3, cols / 2 - 6, "New Highscore")
 	}
 	menu.ColorOff(3)
 }
@@ -234,13 +233,8 @@ func initFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
 }
 
 func testFoodCollision(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
-	if stdscr.MoveInChar(myFood.y, myFood.x) != ' ' || myFood.y == 0 || myFood.x == 0 || myFood.y == rows || myFood.x == cols {
-		return false
-	}
-	return true
+	return !(stdscr.MoveInChar(myFood.y, myFood.x) != ' ' || myFood.y == 0 || myFood.x == 0 || myFood.y == rows || myFood.x == cols) 
 }
-
-
 
 func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	snakeFront := snake.Front().Value.(Segment)
@@ -260,6 +254,11 @@ func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 		r, err := ioutil.ReadFile("/tmp/score")
 		check(err)
 		prevScore, err := strconv.Atoi(string(r))
+
+		if err != nil {
+		   prevScore = 0
+		}
+
 		globalScore += (int(newTime.Sub(startTime) / 10000)) / scoreMulti
 
 		if globalScore > prevScore {
@@ -299,7 +298,7 @@ func drawBorder(stdscr *gc.Window) {
 func drawLogo(stdscr *gc.Window, rows, cols int) {
 	stdscr.ColorOn(3)
 	for i := 0; i < len(gobraAscii); i++ {
-		stdscr.MovePrint(rows/2+i-5, cols/2-20, gobraAscii[i])
+		stdscr.MovePrint(rows / 2 + i - 5, cols / 2 - 20, gobraAscii[i])
 	}
 	stdscr.ColorOff(3)
 }
@@ -343,9 +342,9 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-	    sig := <-sigs
-	    fmt.Println()
-	    fmt.Println(sig)
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println(sig)
 	}()
 
 	// Remap to vim like bindings
@@ -388,7 +387,7 @@ func main() {
 	}
 
 	gc.Echo(false)
-	gc.Cursor(0) 	// Hide cursor
+	gc.Cursor(0)    // Hide cursor
 	gc.CBreak(true) // Disable input buffering
 
 	// Define colors
@@ -413,7 +412,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	<- ready
+	<-ready
 
 	InitSnake(stdscr)  // Create initial snake
 	snakeActive = true // Snake starts alive
@@ -426,6 +425,7 @@ func main() {
 	stdscr.Refresh()
 	time.Sleep(1 * time.Second)
 
+	var scoreLength int
 loop:
 	for {
 		// Clear screen
@@ -436,7 +436,7 @@ loop:
 		drawBorder(stdscr)
 
 		// Print debug Infos
-		if *debugInfo == true {
+		if *debugInfo {
 			frameCounter++
 			stdscr.MovePrint(1, 1, "DEBUG:")
 			stdscr.MovePrint(2, 1, frameCounter)
@@ -465,7 +465,7 @@ loop:
 
 		// Handle collisions
 		if !handleCollisions(stdscr, &newFood, rows, cols) && *sound {
-		    Play(c, freqA, 250 * time.Millisecond)
+			Play(c, freqA, 250 * time.Millisecond)
 		}
 
 		// Check if snake hit boundaries, if desired ports the snake to the other side of the screen
@@ -476,18 +476,19 @@ loop:
 
 		// Overwrite border once again
 		drawBorder(stdscr)
+		scoreLength = len(strconv.Itoa(globalScore))
 
 		// Write score to border
 		stdscr.ColorOn(4)
-		stdscr.MovePrint(0, cols/2-(len(strconv.Itoa(globalScore))/2), globalScore)
+		stdscr.MovePrint(0, (cols / 2) - (scoreLength / 2), globalScore)
 		stdscr.ColorOff(4)
 		stdscr.ColorOn(3)
-		stdscr.MoveAddChar(0, cols/2-1-(len(strconv.Itoa(globalScore))/2), '|')
+		stdscr.MoveAddChar(0, (cols / 2) - (scoreLength / 2) - 1, '|')
 
-		if len(strconv.Itoa(globalScore))%2 == 0 {
-			stdscr.MoveAddChar(0, cols/2+(len(strconv.Itoa(globalScore))/2), '|')
+		if scoreLength % 2 == 0 {
+			stdscr.MoveAddChar(0, (cols / 2) +  (scoreLength / 2), '|')
 		} else {
-			stdscr.MoveAddChar(0, cols/2+1+(len(strconv.Itoa(globalScore))/2), '|')
+			stdscr.MoveAddChar(0, (cols / 2) + (scoreLength / 2)  + 1, '|')
 		}
 
 		stdscr.ColorOff(3)
@@ -496,7 +497,5 @@ loop:
 		// Flush characters that have changed
 		gc.Update()
 	}
-	wg.Wait()
 	input.Delete()
-
 }
