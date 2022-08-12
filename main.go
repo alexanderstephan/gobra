@@ -3,6 +3,7 @@ package main
 import (
 	"container/list"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -56,6 +57,7 @@ func main() {
 
 	go func() {
 		<-sigs
+		fmt.Println("Received SIGINT")
 		run = false
 	}()
 
@@ -147,5 +149,6 @@ func main() {
 		// Flush characters that have changed
 		gc.Update()
 	}
-	input.Delete()
+
+	gc.End() // Restore previous terminal state
 }
