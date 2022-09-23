@@ -12,14 +12,34 @@ import (
 )
 
 // Trackers
-var globalScore int
-var startTime time.Time
-var newTime time.Time
+var (
+	globalScore int
+	startTime   time.Time
+	newTime     time.Time
 
-var screen Screen
+	screen Screen
 
-// Create a rectangle window that is a placeholder for the snake
-var input *gc.Window
+	// Create a rectangle window that is a placeholder for the snake
+	input      *gc.Window
+	gobraASCII = []string{
+		`                  888                     `,
+		`                  888                     `,
+		`                  888                     `,
+		` .d88b.   .d88b.  88888b.  888d888 8888b. `,
+		`d88P"88b d88""88b 888 "88b 888P"      "88b`,
+		`888  888 888  888 888  888 888    .d888888`,
+		`Y88b 888 Y88..88P 888 d88P 888    888  888`,
+		` "Y88888  "Y88P"  88888P"  888    "Y888888`,
+		`     888                                  `,
+		`Y8b d88P                                  `,
+		`"Y88P"                                    `,
+	}
+)
+
+const (
+	MaxRows int = 100
+	MaxCols int = 100
+)
 
 type Segment struct {
 	y, x int
@@ -34,20 +54,6 @@ type Screen struct {
 }
 
 // Logo
-var gobraASCII = []string{
-	`                  888                     `,
-	`                  888                     `,
-	`                  888                     `,
-	` .d88b.   .d88b.  88888b.  888d888 8888b. `,
-	`d88P"88b d88""88b 888 "88b 888P"      "88b`,
-	`888  888 888  888 888  888 888    .d888888`,
-	`Y88b 888 Y88..88P 888 d88P 888    888  888`,
-	` "Y88888  "Y88P"  88888P"  888    "Y888888`,
-	`     888                                  `,
-	`Y8b d88P                                  `,
-	`"Y88P"                                    `,
-}
-
 func drawBorder(stdscr *gc.Window) {
 	stdscr.ColorOn(3)
 	stdscr.Box(gc.ACS_VLINE, gc.ACS_HLINE)
@@ -250,13 +256,20 @@ func NewGame(stdscr *gc.Window, myFood *Food) {
 	globalScore = 0
 }
 
+func calcBoardSize(stdscr *gc.Window) {
+	// Use maximum screen width
+	screen.rows, screen.cols = stdscr.MaxYX()
+	if screen.rows > MaxRows && screen.cols > MaxCols {
+		screen.rows = MaxRows
+		screen.cols = MaxCols
+	}
+
+}
+
 func SetupGameBoard() *gc.Window {
 	// Setup stdscr buffer
 	stdscr, err := gc.Init()
-
-	// Use maximum screen width
-	screen.rows, screen.cols = stdscr.MaxYX()
-
+	calcBoardSize(stdscr)
 	if err != nil {
 		log.Fatal(err)
 	}

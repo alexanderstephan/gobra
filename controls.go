@@ -5,12 +5,14 @@ import (
 )
 
 // Controls
-var keyUp byte
-var keyLeft byte
-var keyDown byte
-var keyRight byte
+var (
+	keyUp    byte
+	keyLeft  byte
+	keyDown  byte
+	keyRight byte
+)
 
-func setDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
+func HandleKeys(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 	// Get input from a dedicated window, otherwise stdscr would be blocked
 	// Define input handlers with interrupt condition
 	switch input.GetChar() {
@@ -40,7 +42,7 @@ func setDir(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 	return true
 }
 
-func initControls(isVim bool) {
+func initKeybindings(isVim bool) {
 	// Remap to vim like bindings
 	if isVim {
 		keyLeft = 'h'

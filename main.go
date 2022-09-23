@@ -3,7 +3,6 @@ package main
 import (
 	"container/list"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -16,24 +15,27 @@ import (
 )
 
 // Parameters to tweak the playing experience
-const foodChar = 'X'
-const snakeAlive = 'O'
-const snakeDead = '+'
-const snakeHead = '0'
-const startSize = 5
-const growRate = 3
-const scoreMulti = 20
+const (
+	foodChar   = 'X'
+	snakeAlive = 'O'
+	snakeDead  = '+'
+	snakeHead  = '0'
+	startSize  = 5
+	growRate   = 3
+	scoreMulti = 20
+)
 
-// Is the game running?
-var run = true
+var (
+	run = true // Is the game running?
 
-// Objects
-var snake = list.New()
-var newFood = Food{}
+	// Objects
+	snake   = list.New()
+	newFood = Food{}
 
-// States
-var snakeActive bool
-var highscore bool
+	// States
+	snakeActive bool
+	highscore   bool
+)
 
 func check(e error) {
 	if e != nil {
@@ -51,13 +53,12 @@ func main() {
 
 	// Randomize pseudo random functions
 	rand.Seed(time.Now().Unix())
+
+	// Setup signal handler.
 	sigs := make(chan os.Signal, 1)
-
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 	go func() {
 		<-sigs
-		fmt.Println("Received SIGINT")
 		run = false
 	}()
 
@@ -69,7 +70,7 @@ func main() {
 
 	stdscr := SetupGameBoard()
 	InitSnake(stdscr) // Create initial snake
-	initControls(*vim)
+	initKeybindings(*vim)
 	input.Timeout(100) // Threshold for timeout
 	input.Keypad(true) // Wait for keyboard input
 	snakeActive = true // Snake starts alive
@@ -85,6 +86,7 @@ func main() {
 		stdscr.Erase()
 
 		// Draw box around the screen (for collision detection)
+		// TODO: Do we need to redraw everything?
 		drawBorder(stdscr)
 
 		// Print debug Infos
@@ -102,8 +104,8 @@ func main() {
 			stdscr.MovePrint(7, 1, rune(stdscr.MoveInChar(0, 0)))
 		}
 
-		// setSnakeDir returns false on exit -> interrupt loop
-		if !setDir(input, stdscr, &newFood) {
+		// setSnakeDir returns false when the user presses q to exit -> interrupt loop
+		if !HandleKeys(input, stdscr, &newFood) {
 			break
 		}
 
