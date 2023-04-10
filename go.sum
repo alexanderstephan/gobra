@@ -1,9 +1,13 @@
 github.com/alexanderstephan/goncurses v0.0.0-20200808213228-94cbc32628dd h1:CL10HSMSUDGBD1Iz/KzqEc6UX13+z7d1EXgf7PrClNY=
 github.com/alexanderstephan/goncurses v0.0.0-20200808213228-94cbc32628dd/go.mod h1:ceMh1H2Mi5wk1+YVlxmlVb6zTrn0YEZt9F1QfeAInA0=
+github.com/ebitengine/purego v0.3.0 h1:BDv9pD98k6AuGNQf3IF41dDppGBOe0F4AofvhFtBXF4=
+github.com/ebitengine/purego v0.3.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/hajimehoshi/oto/v2 v2.0.2 h1:kbMCXhKAZMVyhEEyIqEqmSf4xjfk3HPAf1tMcyKCsN0=
 github.com/hajimehoshi/oto/v2 v2.0.2/go.mod h1:rUKQmwMkqmRxe+IAof9+tuYA2ofm8cAWXFmSfzDN8vQ=
 github.com/hajimehoshi/oto/v2 v2.3.1 h1:qrLKpNus2UfD674oxckKjNJmesp9hMh7u7QCrStB3Rc=
 github.com/hajimehoshi/oto/v2 v2.3.1/go.mod h1:seWLbgHH7AyUMYKfKYT9pg7PhUu9/SisyJvNTT+ASQo=
+github.com/hajimehoshi/oto/v2 v2.4.0 h1:2A8QvGJZ7nXwcfIIthaqWdzDn9Ul/er6oASiKcsfiLg=
+github.com/hajimehoshi/oto/v2 v2.4.0/go.mod h1:74bRBgfJaEDpP3NyVyHIYBJE4DgzJ2IP5l/st5qcJog=
 github.com/rthornton128/goncurses v0.0.0-20210908011339-931b33a34c71 h1:1lA/ljJAwqsNo7HHUG7M4XY9dkp6aYnnW5Tglh7bEgA=
 github.com/rthornton128/goncurses v0.0.0-20210908011339-931b33a34c71/go.mod h1:AHlKFomPTwmO7H2vL8d7VNrQNQmhMi/DBhDnHRhjbCo=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
