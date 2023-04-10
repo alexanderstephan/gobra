@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - uses: actions/setup-go@v1
+    - uses: actions/setup-go@v4
       with:
         go-version: '1.9.3' # The Go version to download (if necessary) and use.
     - run: sudo apt-get install libasound2
