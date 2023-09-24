@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/alexanderstephan/goncurses v0.0.0-20200808213228-94cbc32628dd
-	github.com/hajimehoshi/oto/v2 v2.4.1
+	github.com/hajimehoshi/oto/v3 v3.1.0
 )
 
 require (
