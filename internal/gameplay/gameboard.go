@@ -1,14 +1,15 @@
-package main
+package gameplay
 
 import (
 	"container/list"
-	"io/ioutil"
+	"gobra/internal/tools"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
-	gc "github.com/alexanderstephan/goncurses"
+	gc "github.com/rthornton128/goncurses"
 )
 
 // Trackers
@@ -19,7 +20,7 @@ var (
 
 	screen Screen
 
-	// Create a rectangle window that is a placeholder for the snake
+	// Create a rectangle window that is a placeholder for the snake.
 	input      *gc.Window
 	gobraASCII = []string{
 		`                  888                     `,
@@ -69,7 +70,7 @@ func drawLogo(stdscr *gc.Window, rows, cols int) {
 }
 
 func initColors() {
-	// Set up colors
+	// Set up colors.
 	if err := gc.InitPair(1, gc.C_GREEN, gc.C_BLACK); err != nil {
 		log.Fatal("InitPair failed: ", err)
 	}
@@ -95,7 +96,7 @@ func initColors() {
 	}
 }
 
-// InitFood initializes the foods position
+// InitFood initializes the foods position.
 func printFood(stdscr *gc.Window, newFood *Food, rows, cols int) {
 	stdscr.ColorOn(2)
 	stdscr.MoveAddChar(newFood.y, newFood.x, foodChar)
@@ -135,7 +136,7 @@ func gameOver(menu *gc.Window, rows, cols int) {
 func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	snakeFront := snake.Front().Value.(Segment)
 
-	// Detect food collision
+	// Detect food collision.
 	if snakeFront.y == myFood.y && snakeFront.x == myFood.x {
 		for !testFoodCollision(stdscr, myFood, rows, cols) {
 			myFood.y = rand.Intn(rows)
@@ -144,11 +145,11 @@ func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 
 		GrowSnake(growRate)
 
-		// Calculate score
+		// Calculate score.
 		newTime = time.Now()
 
-		r, err := ioutil.ReadFile("/tmp/score")
-		check(err)
+		r, err := os.ReadFile("/tmp/score")
+		tools.Check(err)
 		prevScore, err := strconv.Atoi(string(r))
 
 		if err != nil {
@@ -160,55 +161,55 @@ func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 		if globalScore > prevScore {
 			d := []byte(strconv.Itoa(globalScore))
 			highscore = true
-			err := ioutil.WriteFile("/tmp/score", d, 0644)
-			check(err)
+			err := os.WriteFile("/tmp/score", d, 0644)
+			tools.Check(err)
 		}
 
-		// Reset timer for next food collection
+		// Reset timer for next food collection.
 		startTime = time.Now()
 		return false
 	}
 
-	// Check if head is element of the body
-	// First body element is the one after the head
+	// Check if head is element of the body.
+	// First body element is the one after the head.
 	bodyElement := snake.Front().Next()
 
 	for bodyElement != nil {
 		if (snakeFront.y == bodyElement.Value.(Segment).y) && (snakeFront.x == bodyElement.Value.(Segment).x) {
 			snakeActive = false
-			// Interrupt for-loop
+			// Interrupt for-loop.
 			break
 		}
-		// Move to the next element
+		// Move to the next element.
 		bodyElement = bodyElement.Next()
 	}
 	return true
 }
 
-func boundaryCheck(nobounds *bool, rows int, cols int) {
+func boundaryCheck(nobounds bool, rows int, cols int) {
 	snakeFront := snake.Front().Value.(Segment)
 
-	// Detect boundaries
-	if !(*nobounds) {
+	// Detect boundaries.
+	if !(nobounds) {
 		if (snakeFront.y > rows-2) || (snakeFront.y < 1) || (snakeFront.x > cols-2) || (snakeFront.x < 1) {
 			snakeActive = false
 		}
 		return
 	}
 	if snakeFront.y > rows-2 {
-		// Hit bottom border
+		// Hit bottom border.
 		snake.Remove(snake.Back())
 		snake.PushFront(Segment{1, snakeFront.x})
 	} else if snakeFront.y < 1 {
-		// Hit top border
+		// Hit top border.
 		snake.Remove(snake.Back())
 		snake.PushFront(Segment{rows - 2, snakeFront.x})
 	} else if snakeFront.x > cols-2 {
-		// Hit right border
+		// Hit right border.
 		snake.Remove(snake.Back())
 		snake.PushFront(Segment{snakeFront.y, 1})
 	} else if snakeFront.x < 1 {
-		// Hit left border
+		// Hit left border.
 		snake.Remove(snake.Back())
 		snake.PushFront(Segment{snakeFront.y, cols - 2})
 	}
@@ -236,28 +237,28 @@ func testFoodCollision(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 }
 
 func NewGame(stdscr *gc.Window, myFood *Food) {
-	// Revive the snake
+	// Revive the snake.
 	snakeActive = true
 
-	// Reset direction
+	// Reset direction.
 	d = East
 
-	// Empty list
+	// Empty list.
 	snake = list.New()
 
-	// Trigger initial food spawn
+	// Trigger initial food spawn.
 	myFood.y = 0
 	myFood.x = 0
 
-	// Set up snake in original position
+	// Set up snake in original position.
 	InitSnake(stdscr)
 
-	// Reset score
+	// Reset score.
 	globalScore = 0
 }
 
 func calcBoardSize(stdscr *gc.Window) {
-	// Use maximum screen width
+	// Use maximum screen width.
 	screen.rows, screen.cols = stdscr.MaxYX()
 	if screen.rows > MaxRows && screen.cols > MaxCols {
 		screen.rows = MaxRows
@@ -274,7 +275,7 @@ func SetupGameBoard() *gc.Window {
 		log.Fatal(err)
 	}
 
-	// End is required to preserve terminal after execution
+	// End is required to preserve terminal after execution.
 	defer gc.End()
 
 	// Has the terminal the capability to use color?
@@ -291,7 +292,7 @@ func SetupGameBoard() *gc.Window {
 	gc.Cursor(0)    // Hide cursor
 	gc.CBreak(true) // Disable input buffering
 
-	// Define colors
+	// Define colors.
 	initColors()
 
 	input, err = gc.NewWindow(0, 0, 0, 0)
@@ -300,7 +301,7 @@ func SetupGameBoard() *gc.Window {
 	}
 	input.Refresh()
 
-	// Welcome screen with logo and controls
+	// Welcome screen with logo and controls.
 	drawLogo(stdscr, screen.rows, screen.cols)
 	return stdscr
 }

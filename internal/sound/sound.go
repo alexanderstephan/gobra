@@ -1,4 +1,4 @@
-package main
+package sound
 
 import (
 	"flag"
@@ -10,17 +10,14 @@ import (
 	"github.com/hajimehoshi/oto/v2"
 )
 
-// Audio
 var (
+	context         *oto.Context
 	sampleRate      = flag.Int("samplerate", 44100, "sample rate")
 	channelNum      = flag.Int("channelnum", 3, "number of channels")
 	bitDepthInBytes = flag.Int("bitdepthinbytes", 2, "bit depth in bytes")
 )
 
-var context *oto.Context
-
-// Sound frequencies
-const freqA = 300
+const FreqA = 300 // sound frequency
 
 type sineWave struct {
 	freq   float64
@@ -39,6 +36,7 @@ func newSineWave(freq float64, duration time.Duration) *sineWave {
 	}
 }
 
+// Read reads data from the sineWave and fills the provided buffer.
 func (s *sineWave) Read(buf []byte) (int, error) {
 	if len(s.remaining) > 0 {
 		n := copy(buf, s.remaining)
@@ -102,17 +100,16 @@ func (s *sineWave) Read(buf []byte) (int, error) {
 	return n, nil
 }
 
-// Play plays a sound at a given frequency for a duration in milliseconds
-func play(freq float64, duration time.Duration) oto.Player {
+// Play plays a sound at a given frequency for a duration in milliseconds.
+func Play(freq float64, duration time.Duration) oto.Player {
 	s := newSineWave(freq, duration)
 	p := context.NewPlayer(s)
 	p.Play()
 	return p
 }
 
-// InitSound initializes oto so sound can be played
+// InitSound initializes oto so sound can be played.
 func InitSound() {
-	// Init sounds
 	c, ready, err := oto.NewContext(*sampleRate, *channelNum, *bitDepthInBytes)
 	if err != nil {
 		log.Fatal(err)
@@ -121,7 +118,7 @@ func InitSound() {
 	context = c
 }
 
-// PlayFoodSound plays a high pitched sound that should be played when the snake eats food
+// PlayFoodSound plays a high pitched sound that should be played when the snake eats food.
 func PlayFoodSound() {
-	play(freqA, 250*time.Millisecond)
+	Play(FreqA, 250*time.Millisecond)
 }
