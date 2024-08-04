@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/hajimehoshi/oto/v2 v2.4.1
-	github.com/rthornton128/goncurses v0.0.0-20231014161942-82671379df88
+	github.com/rthornton128/goncurses v0.0.0-20240804152857-da6485a3b6d7
 )
 
 require (
