@@ -17,7 +17,7 @@ var (
 	bitDepthInBytes = flag.Int("bitdepthinbytes", 2, "bit depth in bytes")
 )
 
-const FreqA = 300 // sound frequency
+const FreqA = 300 // This is the frequency of the generated sound.
 
 type sineWave struct {
 	freq   float64

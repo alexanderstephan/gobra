@@ -88,11 +88,11 @@ func Start(cfg *Config) {
 
 	var scoreLength int
 	for Run {
-		// Clear screen
+		// Clear the screen.
 		stdscr.Refresh()
 		stdscr.Erase()
 
-		// Draw box around the screen (for collision detection)
+		// Draw box around the screen (for collision detection).
 		// TODO: Do we need to redraw everything?
 		drawBorder(stdscr)
 
@@ -111,35 +111,35 @@ func Start(cfg *Config) {
 			stdscr.MovePrint(7, 1, rune(stdscr.MoveInChar(0, 0)))
 		}
 
-		// setSnakeDir returns false when the user presses q to exit -> interrupt loop
+		// setSnakeDir returns false when the user presses q to exit -> interrupt loop.
 		if !HandleKeys(input, stdscr, &newFood) {
 			break
 		}
 
-		// Determine food position if not set yet
+		// Determine the food position if not set yet.
 		initFood(stdscr, &newFood, screen.rows, screen.cols)
 
 		//stdscr.Refresh()
 
-		// Display snake (alive or dead)
+		// Display the snake (alive or dead).
 		handleSnake(stdscr, screen.rows, screen.cols)
 
-		// Handle collisions
+		// Handle collisions.
 		if !handleCollisions(stdscr, &newFood, screen.rows, screen.cols) && cfg.Sound {
 			sound.Play(sound.FreqA, 250*time.Millisecond)
 		}
 
-		// Check if snake hit boundaries, if desired ports the snake to the other side of the screen
+		// Check if snake hit boundaries, if desired ports the snake to the other side of the screen.
 		boundaryCheck(cfg.NoBounds, screen.rows, screen.cols)
 
-		// Render food symbol
+		// Render food symbol.
 		printFood(stdscr, &newFood, screen.rows, screen.cols)
 
-		// Overwrite border once again
+		// Overwrite border once again.
 		drawBorder(stdscr)
 		scoreLength = len(strconv.Itoa(globalScore))
 
-		// Write score to border
+		// Write score to border.
 		stdscr.ColorOn(4)
 		stdscr.MovePrint(0, (screen.cols/2)-(scoreLength/2), globalScore)
 		stdscr.ColorOff(4)
@@ -153,13 +153,13 @@ func Start(cfg *Config) {
 		}
 
 		stdscr.ColorOff(3)
-		// Refresh changes in screen buffer
+		// Refresh changes in screen buffer.
 		stdscr.Refresh()
-		// Flush characters that have changed
+		// Flush characters that have changed.
 		tools.Check(gc.Update())
 	}
 
-	gc.End() // Restore previous terminal state
+	gc.End() // Restore previous terminal state.
 }
 
 // MoveSnake updates the snake's position based on its current direction.

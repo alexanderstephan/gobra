@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gobra/internal/gameplay"
 	"os"
 	"os/signal"
@@ -24,8 +23,7 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigs
-		gameplay.Run = false // TODO: Cancel context
+		gameplay.Run = false // TODO: Cancellable context
 	}()
-	fmt.Println(cfg.Vim)
 	gameplay.Start(&cfg)
 }

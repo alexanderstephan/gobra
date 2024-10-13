@@ -54,7 +54,6 @@ func initKeybindings(isVim bool) {
 		keyUp = 'k'
 		keyRight = 'l'
 	} else {
-		fmt.Println(" is not Vim")
 		keyLeft = 'a'
 		keyUp = 'w'
 		keyDown = 's'

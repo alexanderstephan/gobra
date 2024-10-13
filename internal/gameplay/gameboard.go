@@ -12,7 +12,6 @@ import (
 	gc "github.com/rthornton128/goncurses"
 )
 
-// Trackers
 var (
 	globalScore int
 	startTime   time.Time
@@ -54,7 +53,6 @@ type Screen struct {
 	rows, cols int
 }
 
-// Logo
 func drawBorder(stdscr *gc.Window) {
 	stdscr.ColorOn(3)
 	stdscr.Box(gc.ACS_VLINE, gc.ACS_HLINE)
@@ -71,46 +69,29 @@ func drawLogo(stdscr *gc.Window, rows, cols int) {
 
 func initColors() {
 	// Set up colors.
-	if err := gc.InitPair(1, gc.C_GREEN, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
-
-	if err := gc.InitPair(2, gc.C_RED, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
-
-	if err := gc.InitPair(3, gc.C_YELLOW, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
-
-	if err := gc.InitPair(4, gc.C_MAGENTA, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
-
-	if err := gc.InitPair(5, gc.C_BLACK, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
-
-	if err := gc.InitPair(6, gc.C_WHITE, gc.C_BLACK); err != nil {
-		log.Fatal("InitPair failed: ", err)
-	}
+	tools.Check(gc.InitPair(1, gc.C_GREEN, gc.C_BLACK))
+	tools.Check(gc.InitPair(2, gc.C_RED, gc.C_BLACK))
+	tools.Check(gc.InitPair(3, gc.C_YELLOW, gc.C_BLACK))
+	tools.Check(gc.InitPair(4, gc.C_MAGENTA, gc.C_BLACK))
+	tools.Check(gc.InitPair(5, gc.C_BLACK, gc.C_BLACK))
+	tools.Check(gc.InitPair(6, gc.C_WHITE, gc.C_BLACK))
 }
 
-// InitFood initializes the foods position.
+// printFood prints the symbol for food at a given position.
 func printFood(stdscr *gc.Window, newFood *Food, rows, cols int) {
 	stdscr.ColorOn(2)
 	stdscr.MoveAddChar(newFood.y, newFood.x, foodChar)
 	stdscr.ColorOff(2)
 }
 
-// InitFood initializes the foods position
+// InitFood initializes the foods position.
 func initFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
 	if myFood.y == 0 && myFood.x == 0 {
 		for !testFoodCollision(stdscr, myFood, rows, cols) {
 			myFood.y = rand.Intn(rows)
 			myFood.x = rand.Intn(cols)
 		}
-		// Start timer for score
+		// Start the timer for the score calculation.
 		startTime = time.Now()
 	}
 }
@@ -268,7 +249,7 @@ func calcBoardSize(stdscr *gc.Window) {
 }
 
 func SetupGameBoard() *gc.Window {
-	// Setup stdscr buffer
+	// Setup stdscr buffer.
 	stdscr, err := gc.Init()
 	calcBoardSize(stdscr)
 	if err != nil {
@@ -283,10 +264,8 @@ func SetupGameBoard() *gc.Window {
 		log.Fatal("Require a color capable terminal")
 	}
 
-	// Initalize use of color
-	if err := gc.StartColor(); err != nil {
-		log.Fatal(err)
-	}
+	// Initalize the use of color.
+	tools.Check(gc.StartColor())
 
 	gc.Echo(false)
 	gc.Cursor(0)    // Hide cursor
