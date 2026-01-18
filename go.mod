@@ -1,13 +1,13 @@
 module gobra
 
-go 1.21
+go 1.25
 
 require (
-	github.com/hajimehoshi/oto/v2 v2.4.3
+	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/rthornton128/goncurses v0.0.0-20251206192105-7e6d2302acca
 )
 
 require (
-	github.com/ebitengine/purego v0.4.1 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	github.com/ebitengine/purego v0.9.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
 )
