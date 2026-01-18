@@ -3,7 +3,7 @@ module gobra
 go 1.21
 
 require (
-	github.com/hajimehoshi/oto/v2 v2.4.3
+	github.com/hajimehoshi/oto/v3 v3.4.0
 	github.com/rthornton128/goncurses v0.0.0-20251206192105-7e6d2302acca
 )
 
