@@ -8,5 +8,7 @@ github.com/hajimehoshi/oto/v2 v2.4.3 h1:E+vVhzF2WHuw/UK+aLQh1Spqj+thgsAAg4rbSx+J
 github.com/hajimehoshi/oto/v2 v2.4.3/go.mod h1:Yx9MTrWMeSS6MqkjacVZAicmJ1bqA1SlgCQmk3ybx1E=
 github.com/rthornton128/goncurses v0.0.0-20240804152857-da6485a3b6d7 h1:HRzMcsVbf0rNRrRX/h43syyiRAJFbJFpZFQEUhBJPAo=
 github.com/rthornton128/goncurses v0.0.0-20240804152857-da6485a3b6d7/go.mod h1:AHlKFomPTwmO7H2vL8d7VNrQNQmhMi/DBhDnHRhjbCo=
+github.com/rthornton128/goncurses v0.0.0-20251206192105-7e6d2302acca h1:kFR/H0Y6K2vP5EU0lYLoRWXIiLPztK1r6DTUeSkNo08=
+github.com/rthornton128/goncurses v0.0.0-20251206192105-7e6d2302acca/go.mod h1:AHlKFomPTwmO7H2vL8d7VNrQNQmhMi/DBhDnHRhjbCo=
 golang.org/x/sys v0.7.0 h1:3jlCCIQZPdOYu1h8BkNvLz8Kgwtae2cagcG/VamtZRU=
 golang.org/x/sys v0.7.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
