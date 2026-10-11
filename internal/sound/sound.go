@@ -2,18 +2,18 @@ package sound
 
 import (
 	"flag"
+	"fmt"
 	"io"
-	"log"
 	"math"
 	"time"
-	
+
 	"github.com/ebitengine/oto/v3"
 )
 
 var (
 	context         *oto.Context
 	sampleRate      = flag.Int("samplerate", 44100, "sample rate")
-	channelNum      = flag.Int("channelnum", 3, "number of channels")
+	channelNum      = flag.Int("channelnum", 2, "number of channels")
 	bitDepthInBytes = flag.Int("bitdepthinbytes", 2, "bit depth in bytes")
 )
 
@@ -101,7 +101,7 @@ func (s *sineWave) Read(buf []byte) (int, error) {
 }
 
 // Play plays a sound at a given frequency for a duration in milliseconds.
-func Play(freq float64, duration time.Duration) oto.Player {
+func Play(freq float64, duration time.Duration) *oto.Player {
 	s := newSineWave(freq, duration)
 	p := context.NewPlayer(s)
 	p.Play()
@@ -109,13 +109,20 @@ func Play(freq float64, duration time.Duration) oto.Player {
 }
 
 // InitSound initializes oto so sound can be played.
-func InitSound() {
-	c, ready, err := oto.NewContext(*sampleRate, *channelNum, *bitDepthInBytes)
+func InitSound() error {
+	options := &oto.NewContextOptions{
+		SampleRate:   *sampleRate,
+		ChannelCount: *channelNum,
+		Format:       oto.FormatSignedInt16LE,
+	}
+
+	c, ready, err := oto.NewContext(options)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to create audio context: %w", err)
 	}
 	<-ready
 	context = c
+	return nil
 }
 
 // PlayFoodSound plays a high pitched sound that should be played when the snake eats food.

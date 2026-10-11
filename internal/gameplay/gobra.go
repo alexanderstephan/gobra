@@ -18,6 +18,64 @@ type Config struct {
 	DebugInfo bool
 	NoBounds  bool
 	Sound     bool
+	Difficulty Difficulty
+}
+
+// Difficulty represents the selected gameplay speed and challenge level.
+type Difficulty int
+
+const (
+	Easy Difficulty = iota + 1
+	Normal
+	Hard
+	Insane
+)
+
+func (d Difficulty) String() string {
+	switch d {
+	case Easy:
+		return "easy"
+	case Normal:
+		return "normal"
+	case Hard:
+		return "hard"
+	case Insane:
+		return "insane"
+	default:
+		return "normal"
+	}
+}
+
+func TickDelayForDifficulty(level Difficulty) time.Duration {
+	switch level {
+	case Easy:
+		return 180 * time.Millisecond
+	case Hard:
+		return 90 * time.Millisecond
+	case Insane:
+		return 70 * time.Millisecond
+	case Normal:
+		fallthrough
+	default:
+		return 120 * time.Millisecond
+	}
+}
+
+// PowerUpType defines the temporary bonuses available during play.
+type PowerUpType int
+
+const (
+	Shield PowerUpType = iota
+	ScoreBoost
+)
+
+func ScoreBonusForPowerUp(kind PowerUpType) int {
+	switch kind {
+	case ScoreBoost:
+		return 25
+	default:
+		return 0
+	}
 }
 
 const (
@@ -64,6 +122,9 @@ func InitSnake(stdscr *gc.Window) {
 }
 
 func Start(cfg *Config) {
+	if cfg.Difficulty == 0 {
+		cfg.Difficulty = Normal
+	}
 	Run = true
 	if _, err := os.Stat("/tmp/score"); os.IsNotExist(err) {
 		d := []byte("0")
@@ -157,6 +218,7 @@ func Start(cfg *Config) {
 		stdscr.Refresh()
 		// Flush characters that have changed.
 		tools.Check(gc.Update())
+		time.Sleep(TickDelayForDifficulty(cfg.Difficulty))
 	}
 
 	gc.End() // Restore previous terminal state.
