@@ -16,8 +16,11 @@ var (
 	globalScore int
 	startTime   time.Time
 	newTime     time.Time
+	shieldActive bool
+	powerUpActive bool
 
 	screen Screen
+	powerUp PowerUp
 
 	// Create a rectangle window that is a placeholder for the snake.
 	input      *gc.Window
@@ -46,6 +49,11 @@ type Segment struct {
 }
 
 type Food struct {
+	y, x int
+}
+
+type PowerUp struct {
+	kind PowerUpType
 	y, x int
 }
 
@@ -84,6 +92,40 @@ func printFood(stdscr *gc.Window, newFood *Food, rows, cols int) {
 	stdscr.ColorOff(2)
 }
 
+func printPowerUp(stdscr *gc.Window) {
+	if !powerUpActive {
+		return
+	}
+	stdscr.ColorOn(4)
+	if powerUp.kind == Shield {
+		stdscr.MoveAddChar(powerUp.y, powerUp.x, 'S')
+	} else {
+		stdscr.MoveAddChar(powerUp.y, powerUp.x, '!')
+	}
+	stdscr.ColorOff(4)
+}
+
+func spawnPowerUp(stdscr *gc.Window, rows, cols int) {
+	if powerUpActive || rand.Intn(6) != 0 {
+		return
+	}
+	powerUp.kind = Shield
+	if rand.Intn(2) == 0 {
+		powerUp.kind = ScoreBoost
+	}
+	for {
+		powerUp.y = rand.Intn(rows)
+		powerUp.x = rand.Intn(cols)
+		if powerUp.y == 0 || powerUp.x == 0 || powerUp.y >= rows-1 || powerUp.x >= cols-1 {
+			continue
+		}
+		if stdscr.MoveInChar(powerUp.y, powerUp.x) == ' ' && (powerUp.y != newFood.y || powerUp.x != newFood.x) {
+			powerUpActive = true
+			return
+		}
+	}
+}
+
 // InitFood initializes the foods position.
 func initFood(stdscr *gc.Window, myFood *Food, rows, cols int) {
 	if myFood.y == 0 && myFood.x == 0 {
@@ -117,6 +159,16 @@ func gameOver(menu *gc.Window, rows, cols int) {
 func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 	snakeFront := snake.Front().Value.(Segment)
 
+	if powerUpActive && snakeFront.y == powerUp.y && snakeFront.x == powerUp.x {
+		powerUpActive = false
+		if powerUp.kind == Shield {
+			shieldActive = true
+		} else {
+			globalScore += ScoreBonusForPowerUp(powerUp.kind)
+		}
+		return true
+	}
+
 	// Detect food collision.
 	if snakeFront.y == myFood.y && snakeFront.x == myFood.x {
 		for !testFoodCollision(stdscr, myFood, rows, cols) {
@@ -125,6 +177,7 @@ func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 		}
 
 		GrowSnake(growRate)
+		spawnPowerUp(stdscr, rows, cols)
 
 		// Calculate score.
 		newTime = time.Now()
@@ -157,12 +210,20 @@ func handleCollisions(stdscr *gc.Window, myFood *Food, rows, cols int) bool {
 
 	for bodyElement != nil {
 		if (snakeFront.y == bodyElement.Value.(Segment).y) && (snakeFront.x == bodyElement.Value.(Segment).x) {
+			if shieldActive {
+				shieldActive = false
+				break
+			}
 			snakeActive = false
 			// Interrupt for-loop.
 			break
 		}
 		// Move to the next element.
 		bodyElement = bodyElement.Next()
+	}
+	if shieldActive && (snakeFront.y > rows-2 || snakeFront.y < 1 || snakeFront.x > cols-2 || snakeFront.x < 1) {
+		shieldActive = false
+		return true
 	}
 	return true
 }

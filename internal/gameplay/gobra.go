@@ -208,6 +208,7 @@ func Start(cfg *Config) {
 
 		// Render food symbol.
 		printFood(stdscr, &newFood, screen.rows, screen.cols)
+		printPowerUp(stdscr)
 
 		// Overwrite border once again.
 		drawBorder(stdscr)
