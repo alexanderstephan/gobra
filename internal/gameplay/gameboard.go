@@ -14,13 +14,13 @@ import (
 )
 
 var (
-	globalScore int
-	startTime   time.Time
-	newTime     time.Time
-	shieldActive bool
+	globalScore   int
+	startTime     time.Time
+	newTime       time.Time
+	shieldActive  bool
 	powerUpActive bool
 
-	screen Screen
+	screen  Screen
 	powerUp PowerUp
 
 	// Create a rectangle window that is a placeholder for the snake.
@@ -74,6 +74,113 @@ func drawLogo(stdscr *gc.Window, rows, cols int) {
 		stdscr.MovePrint(rows/2+i-5, cols/2-20, gobraASCII[i])
 	}
 	stdscr.ColorOff(3)
+}
+
+func showSettingsMenu(stdscr *gc.Window, cfg *Config) bool {
+	selected := 0
+	options := []string{"Start Game", "Difficulty", "Sound", "No Bounds", "Vim Controls", "Quit"}
+
+	for {
+		stdscr.Erase()
+		drawLogo(stdscr, screen.rows, screen.cols)
+		stdscr.ColorOn(3)
+		stdscr.MovePrint(screen.rows/2+11, max(2, screen.cols/2-7), "MAIN MENU")
+		stdscr.ColorOff(3)
+
+		for i, option := range options {
+			label := option
+			switch i {
+			case 1:
+				label = "Difficulty: " + strings.ToUpper(cfg.Difficulty.String())
+			case 2:
+				if cfg.Sound {
+					label = "Sound: ON"
+				} else {
+					label = "Sound: OFF"
+				}
+			case 3:
+				if cfg.NoBounds {
+					label = "No Bounds: ON"
+				} else {
+					label = "No Bounds: OFF"
+				}
+			case 4:
+				if cfg.Vim {
+					label = "Controls: VIM"
+				} else {
+					label = "Controls: WASD"
+				}
+			}
+
+			row := screen.rows/2 + 12 + i
+			col := max(2, screen.cols/2-len(label)/2)
+			if i == selected {
+				stdscr.ColorOn(4)
+				stdscr.MovePrint(row, col, "["+label+"]")
+				stdscr.ColorOff(4)
+			} else {
+				stdscr.MovePrint(row, col, label)
+			}
+		}
+
+		stdscr.ColorOn(3)
+		stdscr.MovePrint(screen.rows/2+20, max(2, screen.cols/2-17), "W/S or arrows to move  |  Enter to select")
+		stdscr.ColorOff(3)
+		stdscr.Refresh()
+		tools.Check(gc.Update())
+
+		ch := input.GetChar()
+		switch ch {
+		case gc.KEY_UP, 'w', 'W', 'k', 'K':
+			if selected > 0 {
+				selected--
+			}
+		case gc.KEY_DOWN, 's', 'S', 'j', 'J':
+			if selected < len(options)-1 {
+				selected++
+			}
+		case gc.KEY_LEFT, 'a', 'A', 'h', 'H':
+			if selected == 1 {
+				cfg.Difficulty = cycleDifficulty(cfg.Difficulty, -1)
+			} else if selected == 2 {
+				cfg.Sound = toggleFlag(cfg.Sound)
+			} else if selected == 3 {
+				cfg.NoBounds = toggleFlag(cfg.NoBounds)
+			} else if selected == 4 {
+				cfg.Vim = toggleFlag(cfg.Vim)
+			}
+		case gc.KEY_RIGHT, 'd', 'D', 'l', 'L':
+			if selected == 1 {
+				cfg.Difficulty = cycleDifficulty(cfg.Difficulty, 1)
+			} else if selected == 2 {
+				cfg.Sound = toggleFlag(cfg.Sound)
+			} else if selected == 3 {
+				cfg.NoBounds = toggleFlag(cfg.NoBounds)
+			} else if selected == 4 {
+				cfg.Vim = toggleFlag(cfg.Vim)
+			}
+		case ' ', '\n', '\r':
+			if selected == 0 {
+				return true
+			}
+			if selected == 1 {
+				cfg.Difficulty = cycleDifficulty(cfg.Difficulty, 1)
+				continue
+			}
+			if selected == len(options)-1 {
+				return false
+			}
+			if selected == 2 {
+				cfg.Sound = toggleFlag(cfg.Sound)
+			} else if selected == 3 {
+				cfg.NoBounds = toggleFlag(cfg.NoBounds)
+			} else if selected == 4 {
+				cfg.Vim = toggleFlag(cfg.Vim)
+			}
+		case 'q', 'Q':
+			return false
+		}
+	}
 }
 
 func renderIntro(stdscr *gc.Window, level Difficulty) {

@@ -75,6 +75,21 @@ func formatStatusLine(score int, level Difficulty, hasShield bool) string {
 	return "SCORE " + strconv.Itoa(score) + " | DIFFICULTY " + strings.ToUpper(formatDifficultyName(level)) + " | SHIELD " + shieldState
 }
 
+func cycleDifficulty(current Difficulty, direction int) Difficulty {
+	ordered := []Difficulty{Easy, Normal, Hard, Insane}
+	for i, value := range ordered {
+		if value == current {
+			index := (i + direction + len(ordered)) % len(ordered)
+			return ordered[index]
+		}
+	}
+	return Normal
+}
+
+func toggleFlag(current bool) bool {
+	return !current
+}
+
 func TickDelayForDifficulty(level Difficulty) time.Duration {
 	switch level {
 	case Easy:
@@ -162,10 +177,16 @@ func Start(cfg *Config) {
 	}
 
 	if cfg.Sound {
-		sound.InitSound()
+		if err := sound.InitSound(); err != nil {
+			cfg.Sound = false
+		}
 	}
 
 	stdscr := SetupGameBoard()
+	if !showSettingsMenu(stdscr, cfg) {
+		gc.End()
+		return
+	}
 	InitSnake(stdscr) // Create initial snake
 	initKeybindings(cfg.Vim)
 	input.Timeout(100)              // Threshold for timeout

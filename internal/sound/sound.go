@@ -102,8 +102,15 @@ func (s *sineWave) Read(buf []byte) (int, error) {
 
 // Play plays a sound at a given frequency for a duration in milliseconds.
 func Play(freq float64, duration time.Duration) *oto.Player {
+	if context == nil {
+		return nil
+	}
+
 	s := newSineWave(freq, duration)
 	p := context.NewPlayer(s)
+	if p == nil {
+		return nil
+	}
 	p.Play()
 	return p
 }
@@ -118,6 +125,7 @@ func InitSound() error {
 
 	c, ready, err := oto.NewContext(options)
 	if err != nil {
+		context = nil
 		return fmt.Errorf("failed to create audio context: %w", err)
 	}
 	<-ready

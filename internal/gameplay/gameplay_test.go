@@ -7,9 +7,9 @@ import (
 
 func TestTickDelayForDifficulty(t *testing.T) {
 	tests := []struct {
-		name     string
-		diff     Difficulty
-		want     time.Duration
+		name string
+		diff Difficulty
+		want time.Duration
 	}{
 		{name: "easy", diff: Easy, want: 180 * time.Millisecond},
 		{name: "normal", diff: Normal, want: 120 * time.Millisecond},
@@ -44,6 +44,18 @@ func TestPauseToggle(t *testing.T) {
 	TogglePause()
 	if paused {
 		t.Fatal("TogglePause() should resume when already paused")
+	}
+}
+
+func TestDifficultyCycleAndBoolToggle(t *testing.T) {
+	if got := cycleDifficulty(Normal, 1); got != Hard {
+		t.Fatalf("cycleDifficulty(%v, 1) = %v, want %v", Normal, got, Hard)
+	}
+	if got := cycleDifficulty(Hard, -1); got != Normal {
+		t.Fatalf("cycleDifficulty(%v, -1) = %v, want %v", Hard, got, Normal)
+	}
+	if got := toggleFlag(true); got {
+		t.Fatal("toggleFlag(true) should turn the flag off")
 	}
 }
 
