@@ -12,6 +12,11 @@ import (
 )
 
 var Run bool
+var paused bool
+
+func TogglePause() {
+	paused = !paused
+}
 
 type Config struct {
 	Vim       bool
@@ -175,6 +180,14 @@ func Start(cfg *Config) {
 		// setSnakeDir returns false when the user presses q to exit -> interrupt loop.
 		if !HandleKeys(input, stdscr, &newFood) {
 			break
+		}
+		if paused {
+			stdscr.ColorOn(3)
+			stdscr.MovePrint(screen.rows/2, screen.cols/2-5, "PAUSED")
+			stdscr.ColorOff(3)
+			stdscr.Refresh()
+			tools.Check(gc.Update())
+			continue
 		}
 
 		// Determine the food position if not set yet.

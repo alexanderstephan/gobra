@@ -39,6 +39,8 @@ func HandleKeys(input *gc.Window, stdscr *gc.Window, myFood *Food) bool {
 		if !snakeActive {
 			NewGame(stdscr, myFood)
 		}
+	case 'p', 'P':
+		TogglePause()
 	case 'q':
 		return false
 	}

@@ -34,3 +34,15 @@ func TestPowerUpReward(t *testing.T) {
 		t.Fatalf("ScoreBonusForPowerUp(Shield) = %d, want 0", got)
 	}
 }
+
+func TestPauseToggle(t *testing.T) {
+	paused = false
+	TogglePause()
+	if !paused {
+		t.Fatal("TogglePause() should start a pause")
+	}
+	TogglePause()
+	if paused {
+		t.Fatal("TogglePause() should resume when already paused")
+	}
+}
