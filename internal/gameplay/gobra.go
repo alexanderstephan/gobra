@@ -6,6 +6,7 @@ import (
 	"gobra/internal/tools"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	gc "github.com/rthornton128/goncurses"
@@ -19,10 +20,10 @@ func TogglePause() {
 }
 
 type Config struct {
-	Vim       bool
-	DebugInfo bool
-	NoBounds  bool
-	Sound     bool
+	Vim        bool
+	DebugInfo  bool
+	NoBounds   bool
+	Sound      bool
 	Difficulty Difficulty
 }
 
@@ -49,6 +50,29 @@ func (d Difficulty) String() string {
 	default:
 		return "normal"
 	}
+}
+
+func formatDifficultyName(level Difficulty) string {
+	switch level {
+	case Easy:
+		return "easy"
+	case Hard:
+		return "hard"
+	case Insane:
+		return "insane"
+	case Normal:
+		fallthrough
+	default:
+		return "normal"
+	}
+}
+
+func formatStatusLine(score int, level Difficulty, hasShield bool) string {
+	shieldState := "OFF"
+	if hasShield {
+		shieldState = "ON"
+	}
+	return "SCORE " + strconv.Itoa(score) + " | DIFFICULTY " + strings.ToUpper(formatDifficultyName(level)) + " | SHIELD " + shieldState
 }
 
 func TickDelayForDifficulty(level Difficulty) time.Duration {
@@ -150,7 +174,7 @@ func Start(cfg *Config) {
 	frameCounter := 0               // Init frame count
 
 	stdscr.Refresh()
-	time.Sleep(1 * time.Second)
+	renderIntro(stdscr, cfg.Difficulty)
 
 	var scoreLength int
 	for Run {
@@ -212,6 +236,7 @@ func Start(cfg *Config) {
 
 		// Overwrite border once again.
 		drawBorder(stdscr)
+		renderHUD(stdscr, cfg.Difficulty)
 		scoreLength = len(strconv.Itoa(globalScore))
 
 		// Write score to border.

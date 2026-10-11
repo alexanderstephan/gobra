@@ -46,3 +46,11 @@ func TestPauseToggle(t *testing.T) {
 		t.Fatal("TogglePause() should resume when already paused")
 	}
 }
+
+func TestStatusLineIncludesDifficultyAndShield(t *testing.T) {
+	line := formatStatusLine(42, Hard, true)
+	want := "SCORE 42 | DIFFICULTY HARD | SHIELD ON"
+	if line != want {
+		t.Fatalf("formatStatusLine(%d, %v, %v) = %q, want %q", 42, Hard, true, line, want)
+	}
+}

@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	gc "github.com/rthornton128/goncurses"
@@ -72,6 +73,29 @@ func drawLogo(stdscr *gc.Window, rows, cols int) {
 	for i := 0; i < len(gobraASCII); i++ {
 		stdscr.MovePrint(rows/2+i-5, cols/2-20, gobraASCII[i])
 	}
+	stdscr.ColorOff(3)
+}
+
+func renderIntro(stdscr *gc.Window, level Difficulty) {
+	stdscr.Erase()
+	drawLogo(stdscr, screen.rows, screen.cols)
+
+	stdscr.ColorOn(3)
+	stdscr.MovePrint(screen.rows/2+9, max(2, screen.cols/2-19), "GOBRA")
+	stdscr.MovePrint(screen.rows/2+10, max(2, screen.cols/2-18), "snake for your terminal")
+	intro := "WASD / HJKL to move  |  P to pause  |  Q to quit"
+	stdscr.MovePrint(screen.rows/2+12, max(2, screen.cols/2-len(intro)/2), intro)
+	stdscr.MovePrint(screen.rows/2+14, max(2, screen.cols/2-10), "DIFFICULTY: "+strings.ToUpper(formatDifficultyName(level)))
+	stdscr.ColorOff(3)
+	stdscr.Refresh()
+	tools.Check(gc.Update())
+	time.Sleep(800 * time.Millisecond)
+}
+
+func renderHUD(stdscr *gc.Window, level Difficulty) {
+	status := formatStatusLine(globalScore, level, shieldActive)
+	stdscr.ColorOn(3)
+	stdscr.MovePrint(1, max(2, screen.cols/2-len(status)/2), status)
 	stdscr.ColorOff(3)
 }
 
@@ -142,16 +166,19 @@ func gameOver(menu *gc.Window, rows, cols int) {
 	snakeActive = false
 
 	menu.ColorOn(2)
-	menu.MovePrint(rows/2-1, cols/2-15, "You died. Better luck next time!")
+	menu.MovePrint(rows/2-4, cols/2-6, "GAME OVER")
+	menu.MovePrint(rows/2-2, cols/2-10, "SCORE: "+strconv.Itoa(globalScore))
 	menu.ColorOff(2)
 
 	menu.ColorOn(1)
-	menu.MovePrint(rows/2+1, cols/2-13, "Press 'SPACE' to play again!")
+	menu.MovePrint(rows/2, cols/2-12, "Press 'SPACE' to play again!")
 	menu.ColorOff(1)
 
 	menu.ColorOn(3)
 	if highscore {
-		menu.MovePrint(3, cols/2-6, "New Highscore")
+		menu.MovePrint(rows/2+2, cols/2-8, "NEW HIGHSCORE")
+	} else {
+		menu.MovePrint(rows/2+2, cols/2-7, "TRY AGAIN")
 	}
 	menu.ColorOff(3)
 }
